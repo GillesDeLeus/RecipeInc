@@ -1,32 +1,26 @@
-//
-//  RecipeAppApp.swift
-//  RecipeApp
-//
-//  Created by Gilles De Leus on 20/05/2026.
-//
-
 import SwiftUI
 import SwiftData
 
 @main
 struct RecipeAppApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @State private var appSettings = AppSettings()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(appSettings)
+                .task { NotificationManager.shared.requestAuthorization() }
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(for: [
+            Recipe.self,
+            Ingredient.self,
+            RecipeIngredient.self,
+            RecipePhoto.self,
+            StorageItem.self,
+            RecipeCategory.self,
+            RecipeTag.self,
+            MealPlan.self
+        ])
     }
 }
