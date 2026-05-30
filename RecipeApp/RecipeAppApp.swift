@@ -1,10 +1,17 @@
 import SwiftUI
 import SwiftData
+import TipKit
 
 @main
 struct RecipeAppApp: App {
 
     @State private var appSettings = AppSettings()
+
+    init() {
+        try? Tips.configure([
+            .displayFrequency(.immediate)
+        ])
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -20,7 +27,8 @@ struct RecipeAppApp: App {
             StorageItem.self,
             RecipeCategory.self,
             RecipeTag.self,
-            MealPlan.self
+            MealPlan.self,
+            ShoppingListItem.self
         ])
     }
 }

@@ -6,6 +6,7 @@ struct ShoppingListView: View {
     let selectedDates: Set<Date>
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @Environment(AppSettings.self) private var appSettings
     @Query(sort: \MealPlan.date) private var allMealPlans: [MealPlan]
     @Query private var allStorageItems: [StorageItem]
@@ -24,6 +25,7 @@ struct ShoppingListView: View {
     @State private var isGrouped = false
     @State private var deductStorage = false
     @State private var showShareSheet = false
+    @State private var showAisleOrder = false
 
     // MARK: - Computed lists
 
@@ -63,8 +65,7 @@ struct ShoppingListView: View {
     }
 
     private var itemsByCategory: [(ShoppingCategory, [ShoppingItem])] {
-        let order = ShoppingCategory.allCases
-        return order.compactMap { cat in
+        appSettings.aisleOrder.compactMap { cat in
             let items = shoppingItems.filter { $0.category == cat }
             return items.isEmpty ? nil : (cat, items)
         }
@@ -192,6 +193,24 @@ struct ShoppingListView: View {
                     }
                     .disabled(shoppingItems.isEmpty)
                 }
+                ToolbarItem(placement: .secondaryAction) {
+                    Button {
+                        showAisleOrder = true
+                    } label: {
+                        Label(lang.aisleOrderTitle, systemImage: "arrow.up.arrow.down.square")
+                    }
+                }
+                ToolbarItem(placement: .secondaryAction) {
+                    Button {
+                        addAllToMyList()
+                    } label: {
+                        Label(lang.addAllToShoppingList, systemImage: "checklist.checked")
+                    }
+                    .disabled(shoppingItems.isEmpty)
+                }
+            }
+            .navigationDestination(isPresented: $showAisleOrder) {
+                AisleOrderView()
             }
         }
         #if os(iOS)
@@ -238,6 +257,27 @@ struct ShoppingListView: View {
         }
 
         return lines.joined(separator: "\n")
+    }
+
+    // MARK: - Add all to persistent list
+
+    private func addAllToMyList() {
+        let existing = (try? modelContext.fetch(FetchDescriptor<ShoppingListItem>())) ?? []
+        for item in shoppingItems {
+            let stored = deductStorage ? (storageByKey[item.id] ?? 0) : 0
+            let needed = max(0, item.amount - stored)
+            guard needed > 0 else { continue }
+            if let match = existing.first(where: { $0.name == item.name && $0.unit == item.unit }) {
+                match.amount += needed
+            } else {
+                modelContext.insert(ShoppingListItem(
+                    name: item.name,
+                    unit: item.unit,
+                    amount: needed,
+                    category: item.category
+                ))
+            }
+        }
     }
 
     // MARK: - Helpers

@@ -10,6 +10,13 @@ struct FeaturesView: View {
         @Bindable var settings = appSettings
         List {
             featureRow(
+                isOn: $settings.featureShopping,
+                label: lang.featureShoppingLabel,
+                description: lang.featureShoppingDesc,
+                icon: "checklist",
+                color: .teal
+            )
+            featureRow(
                 isOn: $settings.featureStorage,
                 label: lang.featureStorageLabel,
                 description: lang.featureStorageDesc,

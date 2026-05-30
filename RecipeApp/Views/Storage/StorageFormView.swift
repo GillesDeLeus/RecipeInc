@@ -63,6 +63,7 @@ struct StorageFormView: View {
                         }
                     }
 
+                    #if os(iOS)
                     if scannerAvailable {
                         if isLookingUp {
                             HStack(spacing: 10) {
@@ -93,6 +94,7 @@ struct StorageFormView: View {
                             }
                         }
                     }
+                    #endif
                 }
 
                 // ── Amount ────────────────────────────────────────

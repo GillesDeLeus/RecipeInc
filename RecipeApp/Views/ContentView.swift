@@ -5,6 +5,8 @@ struct ContentView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(AppSettings.self) private var appSettings
+    @Query(filter: #Predicate<ShoppingListItem> { item in !item.isChecked })
+    private var uncheckedShoppingItems: [ShoppingListItem]
 
     var body: some View {
         let lang = appSettings.language
@@ -15,18 +17,29 @@ struct ContentView: View {
             IngredientListView()
                 .tabItem { Label(lang.tabIngredients, systemImage: "carrot") }
 
+            if appSettings.featureShopping {
+                PersistentShoppingListView()
+                    .tabItem { Label(lang.tabShoppingList, systemImage: "checklist") }
+                    .badge(uncheckedShoppingItems.count > 0 ? uncheckedShoppingItems.count : 0)
+            }
+
             if appSettings.featureStorage {
                 StorageListView()
                     .tabItem { Label(lang.tabStorage, systemImage: "cart") }
             }
 
+            // Settings always appears before Calendar so it stays within the first 5
+            // tab slots and is never pushed into the "More" overflow (which would
+            // create a double navigation bar).
+            NavigationStack {
+                SettingsView()
+            }
+            .tabItem { Label(lang.tabSettings, systemImage: "gear") }
+
             if appSettings.featureCalendar {
                 CalendarView()
                     .tabItem { Label(lang.tabCalendar, systemImage: "calendar") }
             }
-
-            SettingsView()
-                .tabItem { Label(lang.tabSettings, systemImage: "gear") }
         }
         .onAppear(perform: seedDefaultData)
     }

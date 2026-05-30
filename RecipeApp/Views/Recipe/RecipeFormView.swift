@@ -36,11 +36,17 @@ struct RecipeFormView: View {
     // Inline creation
     @State private var showAddCategoryAlert = false
     @State private var newCategoryName = ""
+    @State private var showTagPicker = false
     @State private var showAddTagSheet = false
     @State private var newTagName = ""
     @State private var newTagColorHex = RecipeTag.presetColors[5]
 
     private var isValid: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    private var selectedTagSummary: String {
+        let selected = allTags.filter { selectedTagIDs.contains($0.persistentModelID) }
+        return selected.isEmpty ? lang.noCategoryOption : selected.map(\.name).joined(separator: ", ")
+    }
 
     // MARK: - Body
 
@@ -113,16 +119,18 @@ struct RecipeFormView: View {
 
                 // ── Tags ──────────────────────────────────────────
                 Section(lang.tagsLabel) {
-                    ForEach(allTags) { tag in
-                        Button { toggleTag(tag) } label: {
-                            HStack(spacing: 10) {
-                                Circle().fill(Color(hex: tag.colorHex)).frame(width: 12, height: 12)
-                                Text(tag.name).foregroundStyle(.primary)
-                                Spacer()
-                                if selectedTagIDs.contains(tag.persistentModelID) {
-                                    Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
-                                }
-                            }
+                    Button { showTagPicker = true } label: {
+                        HStack {
+                            Text(lang.tagsLabel)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Text(selectedTagSummary)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
                         }
                     }
                     Button { showAddTagSheet = true } label: {
@@ -139,7 +147,6 @@ struct RecipeFormView: View {
                     }
                     .popover(isPresented: $showIngredientPicker) {
                         IngredientPickerView(
-                            ingredients: allIngredients,
                             selectedIDs: Set(lines.map { $0.ingredient.persistentModelID })
                         ) { ingredient in
                             if let idx = lines.firstIndex(where: { $0.ingredient.persistentModelID == ingredient.persistentModelID }) {
@@ -148,6 +155,7 @@ struct RecipeFormView: View {
                                 lines.append(IngredientLine(ingredient: ingredient, amount: 1))
                             }
                         }
+                        .environment(appSettings)
                         .frame(minWidth: 280, minHeight: 380)
                     }
                 } header: { Text(lang.ingredientsPerServing) } footer: { Text(lang.amountsNote) }
@@ -192,6 +200,10 @@ struct RecipeFormView: View {
                     newCategoryName = ""
                 }
                 Button(lang.cancel, role: .cancel) { newCategoryName = "" }
+            }
+            .sheet(isPresented: $showTagPicker) {
+                TagPickerSheet(allTags: allTags, selectedTagIDs: $selectedTagIDs)
+                    .environment(appSettings)
             }
             .sheet(isPresented: $showAddTagSheet) {
                 InlineAddTagSheet(selectedTagIDs: $selectedTagIDs)
@@ -293,6 +305,60 @@ private func compressPhoto(_ data: Data, maxDimension: CGFloat = 1200) -> Data {
     return CGImageDestinationFinalize(dest) ? (output as Data) : data
 }
 
+// MARK: - Tag picker sheet
+
+private struct TagPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(AppSettings.self) private var appSettings
+
+    let allTags: [RecipeTag]
+    @Binding var selectedTagIDs: Set<PersistentIdentifier>
+
+    private var lang: AppLanguage { appSettings.language }
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if allTags.isEmpty {
+                    ContentUnavailableView {
+                        Label(lang.tagsLabel, systemImage: "tag")
+                    } description: { Text(lang.addNewTag) }
+                } else {
+                    List(allTags) { tag in
+                        Button {
+                            if selectedTagIDs.contains(tag.persistentModelID) {
+                                selectedTagIDs.remove(tag.persistentModelID)
+                            } else {
+                                selectedTagIDs.insert(tag.persistentModelID)
+                            }
+                        } label: {
+                            HStack(spacing: 12) {
+                                Circle()
+                                    .fill(Color(hex: tag.colorHex))
+                                    .frame(width: 12, height: 12)
+                                Text(tag.name)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                if selectedTagIDs.contains(tag.persistentModelID) {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle(lang.tagsLabel)
+            .navigationTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(lang.done) { dismiss() }
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Inline add-tag sheet (inside form)
 
 private struct InlineAddTagSheet: View {
@@ -388,10 +454,13 @@ private struct IngredientPickerView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSettings.self) private var appSettings
 
-    let ingredients: [Ingredient]
+    @Query(sort: \Ingredient.name) private var ingredients: [Ingredient]
+
     let selectedIDs: Set<PersistentIdentifier>
     let onToggle: (Ingredient) -> Void
+
     @State private var searchText = ""
+    @State private var showAddIngredientSheet = false
 
     private var lang: AppLanguage { appSettings.language }
     private var filtered: [Ingredient] {
@@ -405,14 +474,16 @@ private struct IngredientPickerView: View {
                 if ingredients.isEmpty {
                     ContentUnavailableView {
                         Label(lang.noIngredientsTitle, systemImage: "carrot")
-                    } description: { Text(lang.noIngredientsHint) }
+                    } description: { Text(lang.addFirstIngredient) }
                 } else {
                     List(filtered) { ingredient in
                         Button { onToggle(ingredient) } label: {
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(ingredient.name).foregroundStyle(.primary)
-                                    Text(ingredient.unit).font(.caption).foregroundStyle(.secondary)
+                                    if !ingredient.unit.isEmpty {
+                                        Text(ingredient.unit).font(.caption).foregroundStyle(.secondary)
+                                    }
                                 }
                                 Spacer()
                                 if selectedIDs.contains(ingredient.persistentModelID) {
@@ -427,8 +498,96 @@ private struct IngredientPickerView: View {
             .navigationTitle(lang.chooseIngredients)
             .navigationTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { showAddIngredientSheet = true } label: {
+                        Label(lang.newIngredient, systemImage: "plus")
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(lang.done) { dismiss() }
+                }
+            }
+            .sheet(isPresented: $showAddIngredientSheet) {
+                InlineAddIngredientSheet { newIngredient in
+                    onToggle(newIngredient)
+                }
+                .environment(appSettings)
+            }
+        }
+    }
+}
+
+// MARK: - Inline add-ingredient sheet
+
+private struct InlineAddIngredientSheet: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+    @Environment(AppSettings.self) private var appSettings
+
+    let onCreated: (Ingredient) -> Void
+
+    @State private var name = ""
+    @State private var unit = ""
+    @State private var category: ShoppingCategory = .other
+
+    private let commonUnits = ["g", "kg", "ml", "cl", "l", "stuk", "el", "tl",
+                                "snuf", "takje", "blaadje", "teen"]
+
+    private var lang: AppLanguage { appSettings.language }
+    private var isValid: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(lang.nameLabel) {
+                    TextField(lang.namePlaceholder, text: $name)
+                        .autocorrectionDisabled()
+                }
+                Section(lang.unitLabel) {
+                    TextField(lang.unitPlaceholder, text: $unit)
+                        .autocorrectionDisabled()
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(commonUnits, id: \.self) { suggestion in
+                                Button(suggestion) { unit = suggestion }
+                                    .buttonStyle(.bordered)
+                                    .tint(unit == suggestion ? .accentColor : .secondary)
+                                    .controlSize(.small)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+                Section(lang.shoppingCategoryLabel) {
+                    Picker(lang.shoppingCategoryLabel, selection: $category) {
+                        ForEach(ShoppingCategory.allCases) { cat in
+                            Label(cat.localizedName(in: lang), systemImage: cat.icon).tag(cat)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+            }
+            .formStyle(.grouped)
+            .navigationTitle(lang.newIngredient)
+            .navigationTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(lang.cancel) { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(lang.addItem) {
+                        let trimmed = name.trimmingCharacters(in: .whitespaces)
+                        guard !trimmed.isEmpty else { return }
+                        let ingredient = Ingredient(
+                            name: trimmed,
+                            unit: unit.trimmingCharacters(in: .whitespaces),
+                            shoppingCategory: category
+                        )
+                        modelContext.insert(ingredient)
+                        onCreated(ingredient)
+                        dismiss()
+                    }
+                    .disabled(!isValid)
                 }
             }
         }

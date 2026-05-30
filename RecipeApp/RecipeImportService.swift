@@ -238,6 +238,14 @@ enum RecipeImportService {
                     range: NSRange(text.startIndex..., in: text), withTemplate: " ")
             }
         }
+        // Replace block-level elements with newlines so paragraph structure is preserved
+        let blockPatterns = ["</p>", "</div>", "</li>", "</h[1-6]>", "<br\\s*/?>"]
+        for pattern in blockPatterns {
+            if let re = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                text = re.stringByReplacingMatches(in: text,
+                    range: NSRange(text.startIndex..., in: text), withTemplate: "\n")
+            }
+        }
         // Strip remaining tags
         if let re = try? NSRegularExpression(pattern: "<[^>]+>") {
             text = re.stringByReplacingMatches(in: text,
@@ -251,9 +259,14 @@ enum RecipeImportService {
             .replacingOccurrences(of: "&nbsp;", with: " ")
             .replacingOccurrences(of: "&#39;",  with: "'")
             .replacingOccurrences(of: "&quot;", with: "\"")
-        // Collapse whitespace
-        let words = text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
-        return words.joined(separator: " ")
+        // Collapse runs of spaces within each line, drop blank lines
+        let lines = text.components(separatedBy: "\n").compactMap { line -> String? in
+            let trimmed = line.components(separatedBy: .whitespaces)
+                .filter { !$0.isEmpty }
+                .joined(separator: " ")
+            return trimmed.isEmpty ? nil : trimmed
+        }
+        return lines.joined(separator: "\n")
     }
 
     // MARK: Vision OCR
@@ -300,7 +313,9 @@ enum RecipeImportService {
             You are a recipe extraction assistant. \
             Extract the recipe from the provided text and return it in the requested structure. \
             If a field is missing, use a sensible default (empty string for text, 0 for numbers, empty array for lists). \
-            For ingredients, split combined ingredient strings into name, numeric amount, and unit.
+            For ingredients, split combined ingredient strings into name, numeric amount, and unit. \
+            For steps, output each distinct preparation step as a separate array entry — do not merge steps \
+            into one string and do not include step numbers or bullet characters in the text itself.
             """)
 
         let response = try await session.respond(to: text, generating: LLMRecipe.self)
@@ -308,7 +323,7 @@ enum RecipeImportService {
         return ImportedRecipeData(
             name: r.name,
             prepTimeMinutes: r.prepTimeMinutes,
-            instructions: r.instructions,
+            instructions: r.steps.joined(separator: "\n\n"),
             ingredients: r.ingredients.map {
                 ImportedIngredientData(name: $0.name, amount: $0.amount, unit: $0.unit)
             }
@@ -327,8 +342,8 @@ private struct LLMRecipe {
     @Guide(description: "Total preparation and cooking time in minutes as an integer, e.g. 45")
     var prepTimeMinutes: Int
 
-    @Guide(description: "Complete step-by-step instructions as one block of text")
-    var instructions: String
+    @Guide(description: "Each preparation step as a separate string in order, without step numbers or bullet characters")
+    var steps: [String]
 
     @Guide(description: "All ingredients needed")
     var ingredients: [LLMIngredient]

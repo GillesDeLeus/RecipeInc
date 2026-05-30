@@ -56,12 +56,20 @@ final class Ingredient {
     var createdAt: Date = Date()
     var shoppingCategory: ShoppingCategory
 
-    // Nutritional values per 100 g (populated via Nutritionix API)
-    var caloriesPer100g: Double? = nil
-    var proteinPer100g:  Double? = nil
-    var fatPer100g:      Double? = nil
-    var carbsPer100g:    Double? = nil
-    var fiberPer100g:    Double? = nil
+    // Nutritional values per 100 g (NEVO database)
+    var caloriesPer100g:  Double? = nil
+    var proteinPer100g:   Double? = nil
+    var fatPer100g:       Double? = nil
+    var satFatPer100g:    Double? = nil
+    var carbsPer100g:     Double? = nil
+    var sugarsPer100g:    Double? = nil
+    var fiberPer100g:     Double? = nil
+    var sodiumPer100g:    Double? = nil
+    var potassiumPer100g: Double? = nil
+    var calciumPer100g:   Double? = nil
+    var ironPer100g:      Double? = nil
+    var vitCPer100g:      Double? = nil
+    var vitDPer100g:      Double? = nil
 
     // MARK: - Relationships
 

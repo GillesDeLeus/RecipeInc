@@ -65,7 +65,7 @@ struct CookModeView: View {
         .focusable()
         .focused($isFocused)
         .onKeyPress(.leftArrow)  { goPrev(); return .handled }
-        .onKeyPress(.rightArrow) { isLast ? dismiss() : goNext(); return .handled }
+        .onKeyPress(.rightArrow) { if isLast { dismiss() } else { goNext() }; return .handled }
         .onAppear  { isFocused = true; keepAwake() }
         .onDisappear { allowSleep() }
         .sheet(isPresented: $showingIngredients) {
@@ -207,7 +207,7 @@ struct CookModeView: View {
             Spacer()
 
             // Next / Finish
-            Button(action: isLast ? { dismiss() } : goNext) {
+            Button { if isLast { dismiss() } else { goNext() } } label: {
                 HStack(spacing: 6) {
                     Text(isLast ? lang.cookModeFinish : lang.nextStep)
                     if !isLast { Image(systemName: "chevron.right") }

@@ -24,8 +24,7 @@ struct SettingsView: View {
         @Bindable var settings = appSettings
         let lang = appSettings.language
 
-        NavigationStack {
-            Form {
+        Form {
                 // ── Language ──────────────────────────────────────
                 Section(lang.languageLabel) {
                     Picker(lang.languageLabel, selection: $settings.language) {
@@ -51,6 +50,9 @@ struct SettingsView: View {
                     }
                     NavigationLink(lang.manageTags) {
                         TagManagementView()
+                    }
+                    NavigationLink(lang.manageAisleOrder) {
+                        AisleOrderView()
                     }
                 }
 
@@ -130,7 +132,6 @@ struct SettingsView: View {
                     showConflictSheet = false
                 }
             }
-        }
     }
 
     // MARK: - Actions

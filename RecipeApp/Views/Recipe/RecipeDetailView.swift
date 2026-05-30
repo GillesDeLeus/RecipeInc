@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import TipKit
 
 struct RecipeDetailView: View {
 
@@ -8,6 +9,8 @@ struct RecipeDetailView: View {
     @Environment(AppSettings.self) private var appSettings
 
     let recipe: Recipe
+
+    private let cookModeTip = CookModeTip()
 
     @State private var showEditSheet = false
     @State private var showDeleteConfirmation = false
@@ -25,6 +28,11 @@ struct RecipeDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
+
+                // Show cook mode tip at the top so it's immediately visible
+                if !recipe.instructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    TipView(cookModeTip, arrowEdge: .top)
+                }
 
                 // ── Photo gallery ─────────────────────────────────────
                 if !recipe.photos.isEmpty {
@@ -150,6 +158,7 @@ struct RecipeDetailView: View {
                 if !recipe.instructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Button {
                         showCookMode = true
+                        cookModeTip.invalidate(reason: .actionPerformed)
                     } label: {
                         Label(lang.cookMode, systemImage: "flame")
                     }
@@ -178,11 +187,18 @@ struct RecipeDetailView: View {
         .sheet(isPresented: $showEditSheet) {
             RecipeFormView(recipe: recipe)
         }
+        #if os(iOS)
+        .fullScreenCover(isPresented: $showCookMode) {
+            CookModeView(recipe: recipe, portions: portions)
+                .environment(appSettings)
+        }
+        #else
         .sheet(isPresented: $showCookMode) {
             CookModeView(recipe: recipe, portions: portions)
                 .environment(appSettings)
                 .frame(minWidth: 620, minHeight: 520)
         }
+        #endif
         // Block: recipe has future calendar entries
         .alert(lang.recipeFutureScheduledTitle, isPresented: $showFutureScheduledAlert) {
             Button(lang.cancel, role: .cancel) {}
@@ -212,11 +228,19 @@ struct RecipeDetailView: View {
     // MARK: - Nutrition
 
     private struct RecipeNutrition {
-        var calories: Double = 0
-        var protein:  Double = 0
-        var fat:      Double = 0
-        var carbs:    Double = 0
-        var fiber:    Double = 0
+        var calories:  Double = 0
+        var protein:   Double = 0
+        var fat:       Double = 0
+        var satFat:    Double = 0
+        var carbs:     Double = 0
+        var sugars:    Double = 0
+        var fiber:     Double = 0
+        var sodium:    Double = 0
+        var potassium: Double = 0
+        var calcium:   Double = 0
+        var iron:      Double = 0
+        var vitC:      Double = 0
+        var vitD:      Double = 0
         var includedCount: Int = 0
         var totalCount:    Int = 0
     }
@@ -229,11 +253,19 @@ struct RecipeDetailView: View {
         for ri in recipe.recipeIngredients {
             guard let ingredient = ri.ingredient, ingredient.caloriesPer100g == nil else { continue }
             if let info = try? NutritionService.lookup(ingredientName: ingredient.name) {
-                ingredient.caloriesPer100g = info.caloriesPer100g
-                ingredient.proteinPer100g  = info.proteinPer100g
-                ingredient.fatPer100g      = info.fatPer100g
-                ingredient.carbsPer100g    = info.carbsPer100g
-                ingredient.fiberPer100g    = info.fiberPer100g
+                ingredient.caloriesPer100g  = info.caloriesPer100g
+                ingredient.proteinPer100g   = info.proteinPer100g
+                ingredient.fatPer100g       = info.fatPer100g
+                ingredient.satFatPer100g    = info.satFatPer100g
+                ingredient.carbsPer100g     = info.carbsPer100g
+                ingredient.sugarsPer100g    = info.sugarsPer100g
+                ingredient.fiberPer100g     = info.fiberPer100g
+                ingredient.sodiumPer100g    = info.sodiumPer100g
+                ingredient.potassiumPer100g = info.potassiumPer100g
+                ingredient.calciumPer100g   = info.calciumPer100g
+                ingredient.ironPer100g      = info.ironPer100g
+                ingredient.vitCPer100g      = info.vitCPer100g
+                ingredient.vitDPer100g      = info.vitDPer100g
             }
         }
     }
@@ -251,17 +283,28 @@ struct RecipeDetailView: View {
             case "cl":      scale = ri.amount / 10.0
             default:        continue
             }
-            result.calories += kcal                      * scale
-            result.protein  += (ing.proteinPer100g ?? 0) * scale
-            result.fat      += (ing.fatPer100g     ?? 0) * scale
-            result.carbs    += (ing.carbsPer100g   ?? 0) * scale
-            result.fiber    += (ing.fiberPer100g   ?? 0) * scale
+            result.calories  += kcal                           * scale
+            result.protein   += (ing.proteinPer100g   ?? 0)   * scale
+            result.fat       += (ing.fatPer100g       ?? 0)   * scale
+            result.satFat    += (ing.satFatPer100g    ?? 0)   * scale
+            result.carbs     += (ing.carbsPer100g     ?? 0)   * scale
+            result.sugars    += (ing.sugarsPer100g    ?? 0)   * scale
+            result.fiber     += (ing.fiberPer100g     ?? 0)   * scale
+            result.sodium    += (ing.sodiumPer100g    ?? 0)   * scale
+            result.potassium += (ing.potassiumPer100g ?? 0)   * scale
+            result.calcium   += (ing.calciumPer100g   ?? 0)   * scale
+            result.iron      += (ing.ironPer100g      ?? 0)   * scale
+            result.vitC      += (ing.vitCPer100g      ?? 0)   * scale
+            result.vitD      += (ing.vitDPer100g      ?? 0)   * scale
             result.includedCount += 1
         }
         guard result.includedCount > 0 else { return nil }
         let p = Double(portions)
-        result.calories *= p; result.protein *= p
-        result.fat      *= p; result.carbs   *= p; result.fiber *= p
+        result.calories  *= p; result.protein   *= p; result.fat    *= p
+        result.satFat    *= p; result.carbs      *= p; result.sugars *= p
+        result.fiber     *= p; result.sodium     *= p; result.potassium *= p
+        result.calcium   *= p; result.iron       *= p
+        result.vitC      *= p; result.vitD       *= p
         return result
     }
 
@@ -270,6 +313,8 @@ struct RecipeDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(lang.nutritionTitle)
                 .font(.title2).fontWeight(.semibold)
+
+            // Macronutrients row
             HStack(spacing: 0) {
                 nutritionCell(lang.nutritionCalories, value: n.calories, unit: "kcal", color: .orange)
                 nutritionCell(lang.nutritionProtein,  value: n.protein,  unit: "g",    color: .blue)
@@ -280,6 +325,24 @@ struct RecipeDetailView: View {
             .padding(12)
             .background(Color.secondary.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            // Extended nutrients: sub-macros + minerals + vitamins
+            VStack(spacing: 6) {
+                nutritionDetailRow(lang.nutritionSatFat,    value: n.satFat,    unit: "g")
+                nutritionDetailRow(lang.nutritionSugars,    value: n.sugars,    unit: "g")
+                Divider()
+                nutritionDetailRow(lang.nutritionSodium,    value: n.sodium,    unit: "mg", decimals: 0)
+                nutritionDetailRow(lang.nutritionPotassium, value: n.potassium, unit: "mg", decimals: 0)
+                nutritionDetailRow(lang.nutritionCalcium,   value: n.calcium,   unit: "mg", decimals: 0)
+                nutritionDetailRow(lang.nutritionIron,      value: n.iron,      unit: "mg")
+                Divider()
+                nutritionDetailRow(lang.nutritionVitC,      value: n.vitC,      unit: "mg")
+                nutritionDetailRow(lang.nutritionVitD,      value: n.vitD,      unit: "µg")
+            }
+            .padding(12)
+            .background(Color.secondary.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
             if n.includedCount < n.totalCount {
                 Text(lang.nutritionIngredientNote(n.includedCount, n.totalCount))
                     .font(.caption).foregroundStyle(.secondary)
@@ -298,6 +361,17 @@ struct RecipeDetailView: View {
             Text(label).font(.caption2).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private func nutritionDetailRow(_ label: String, value: Double, unit: String, decimals: Int = 1) -> some View {
+        HStack {
+            Text(label).font(.caption).foregroundStyle(.secondary)
+            Spacer()
+            Text(decimals == 0 ? "\(Int(value.rounded()))" : String(format: "%.\(decimals)f", value))
+                .font(.caption).fontWeight(.medium)
+            Text(unit).font(.caption).foregroundStyle(.secondary).frame(width: 28, alignment: .leading)
+        }
     }
 
     // MARK: - Share text

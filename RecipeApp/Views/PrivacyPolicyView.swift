@@ -58,6 +58,7 @@ struct PrivacyPolicyView: View {
             • Ingredients – name, unit of measurement, and shopping category.
             • Storage inventory – ingredients you own, quantities, storage location, and optional expiry dates.
             • Meal plans – dates, meal types, portions, and notes.
+            • Shopping list – items you add manually or generate from a meal plan, including name, amount, unit, category, and checked status.
 
             The App does not collect any data automatically. No usage analytics, crash reports, advertising identifiers, or device telemetry are gathered.
             """
@@ -178,6 +179,7 @@ struct PrivacyPolicyView: View {
             • Ingrediënten – naam, meeteenheid en winkelcategorie.
             • Voorraad – ingrediënten die u bezit, hoeveelheden, opslaglocatie en optionele vervaldatums.
             • Maaltijdplanning – datums, maaltijdtypes, porties en notities.
+            • Boodschappenlijst – items die u handmatig toevoegt of genereert vanuit een maaltijdplan, inclusief naam, hoeveelheid, eenheid, categorie en afvinkstatus.
 
             De App verzamelt geen gegevens automatisch. Er worden geen gebruiksanalyses, crashrapporten, advertentie-identifiers of apparaattelemetrie verzameld.
             """

@@ -39,11 +39,21 @@ final class AppSettings {
     var featureNutrition: Bool {
         didSet { UserDefaults.standard.set(featureNutrition, forKey: "featureNutrition") }
     }
+    var featureShopping: Bool {
+        didSet { UserDefaults.standard.set(featureShopping, forKey: "featureShopping") }
+    }
     var notificationHour: Int {
         didSet { UserDefaults.standard.set(notificationHour, forKey: "notificationHour") }
     }
     var notificationMinute: Int {
         didSet { UserDefaults.standard.set(notificationMinute, forKey: "notificationMinute") }
+    }
+    var aisleOrder: [ShoppingCategory] {
+        didSet {
+            if let data = try? JSONEncoder().encode(aisleOrder) {
+                UserDefaults.standard.set(data, forKey: "aisleOrder")
+            }
+        }
     }
 
     init() {
@@ -54,8 +64,17 @@ final class AppSettings {
         self.featureCalendar  = UserDefaults.standard.object(forKey: "featureCalendar")  as? Bool ?? true
         self.featureAIImport  = UserDefaults.standard.object(forKey: "featureAIImport")  as? Bool ?? true
         self.featureNutrition = UserDefaults.standard.object(forKey: "featureNutrition") as? Bool ?? true
+        self.featureShopping  = UserDefaults.standard.object(forKey: "featureShopping")  as? Bool ?? true
         self.notificationHour   = UserDefaults.standard.object(forKey: "notificationHour")   as? Int ?? 9
         self.notificationMinute = UserDefaults.standard.object(forKey: "notificationMinute") as? Int ?? 0
+        // Restore saved order; append any categories added in future app updates
+        if let data = UserDefaults.standard.data(forKey: "aisleOrder"),
+           let order = try? JSONDecoder().decode([ShoppingCategory].self, from: data) {
+            let missing = ShoppingCategory.allCases.filter { !order.contains($0) }
+            self.aisleOrder = order + missing
+        } else {
+            self.aisleOrder = ShoppingCategory.allCases
+        }
     }
 }
 
@@ -176,6 +195,11 @@ extension AppLanguage {
     var editStorageItem: String     { t("Edit Storage Item", "Bewerk voorraad") }
     var noStorageTitle: String      { t("No Storage Items", "Geen voorraad") }
     var addStorageHint: String      { t("Add ingredients you have at home.", "Voeg ingrediënten toe die je in huis hebt.") }
+    var searchStorage: String       { t("Search storage…", "Zoek in voorraad…") }
+    var sortByExpiry: String        { t("Expiry (soonest first)", "Vervaldatum (vroegste eerst)") }
+    var filterExpiringSoon: String  { t("Expiring within 7 days", "Verloopt binnen 7 dagen") }
+    var filterExpired: String       { t("Show expired items", "Verlopen items tonen") }
+    var filterByLocation: String    { t("Location", "Locatie") }
     var ingredientLabel: String     { t("Ingredient", "Ingrediënt") }
     var chooseIngredient: String    { t("Choose an ingredient", "Kies een ingrediënt") }
     var amountLabel: String         { t("Amount", "Hoeveelheid") }
@@ -283,10 +307,15 @@ extension AppLanguage {
     var analyzeButton: String        { t("Analyze", "Analyseren") }
     var analyzingRecipe: String      { t("Analyzing recipe…", "Recept analyseren…") }
     var fetchingURL: String          { t("Fetching page…", "Pagina ophalen…") }
+    var aiImportDisclaimer: String   { t(
+        "AI-assisted import is experimental and may make mistakes. All processing happens on-device — no data is sent to external servers.",
+        "AI-gestuurde import is experimenteel en kan fouten bevatten. Alle verwerking gebeurt op het apparaat zelf — er worden geen gegevens naar externe servers verzonden."
+    ) }
     var addToRecipes: String         { t("Add to Recipes", "Toevoegen aan recepten") }
     var importRecipeBtn: String      { t("Import Recipe", "Recept importeren") }
     var importedPreviewTitle: String { t("Recipe Preview", "Receptvoorbeeld") }
     var noAIHint: String             { t("Structured data not found. AI parsing requires macOS 26 or later.", "Gestructureerde data niet gevonden. AI-verwerking vereist macOS 26 of hoger.") }
+    var aiRequiresiOS26: String      { t("Photo analysis requires iOS 26 or later. Update your device to use this feature.", "Fotoanalyse vereist iOS 26 of hoger. Update je toestel om deze functie te gebruiken.") }
 
     // Privacy policy
     var privacyPolicyTitle: String         { t("Privacy Policy", "Privacybeleid") }
@@ -319,7 +348,19 @@ extension AppLanguage {
     var categoryHerbs: String     { t("Herbs & Spices", "Kruiden") }
     var categoryOther: String     { t("Other", "Overig") }
     var shoppingCategoryLabel: String { t("Category", "Categorie") }
+    var tabShoppingList: String   { t("Shopping", "Boodschappen") }
     var groupByCategory: String   { t("Group by Category", "Groepeer op categorie") }
+    var clearChecked: String      { t("Clear Checked", "Afgevinkte verwijderen") }
+    var addShoppingItemTitle: String { t("Add Item", "Item toevoegen") }
+    var addAllToShoppingList: String { t("Add All to My List", "Alles naar mijn lijst") }
+    var myListEmptyHint: String   { t("Add items manually or tap \"Add All to My List\" from a meal plan.", "Voeg items handmatig toe of tik op \"Alles naar mijn lijst\" vanuit een maaltijdplan.") }
+    var aisleOrderTitle: String   { t("Aisle Order", "Gangvolgorde") }
+    var aisleOrderHint: String    { t("Drag categories to match your store's layout. The shopping list groups items in this order.", "Sleep categorieën om de indeling van uw winkel te weerspiegelen. De boodschappenlijst groepeert items in deze volgorde.") }
+    var manageAisleOrder: String  { t("Aisle Order", "Gangvolgorde") }
+    var newItem: String           { t("New Item", "Nieuw item") }
+    func addAsNewItem(_ name: String) -> String {
+        t("Add \"\(name)\" as new item", "Voeg \"\(name)\" toe als nieuw item")
+    }
     var deductFromStorage: String { t("Deduct from storage", "Trek voorraad af") }
     var fullyInStorage: String    { t("In storage", "Al in voorraad") }
     func haveInStorage(_ amount: String) -> String { t("have \(amount) in storage", "\(amount) in voorraad") }
@@ -367,6 +408,8 @@ extension AppLanguage {
     var featureAIDesc: String          { t("Import recipes from photos or URLs using on-device AI.", "Recepten importeren via foto's of URL's met on-device AI.") }
     var featureNutritionLabel: String  { t("Nutrition", "Voedingswaarden") }
     var featureNutritionDesc: String   { t("Show calorie and nutrient data per recipe.", "Calorie- en voedingswaarden per recept tonen.") }
+    var featureShoppingLabel: String   { t("Shopping List", "Boodschappenlijst") }
+    var featureShoppingDesc: String    { t("Manually add items and generate lists from your meal plan.", "Handmatig items toevoegen en lijsten genereren vanuit je maaltijdplan.") }
 
     // Nutrition
     var nutritionTitle: String        { t("Nutrition", "Voedingswaarden") }
@@ -375,6 +418,16 @@ extension AppLanguage {
     var nutritionFat: String          { t("Fat", "Vet") }
     var nutritionCarbs: String        { t("Carbs", "Koolhydraten") }
     var nutritionFiber: String        { t("Fiber", "Vezels") }
+    var nutritionSatFat: String       { t("of which Saturated Fat", "waarvan verzadigd vet") }
+    var nutritionSugars: String       { t("of which Sugars", "waarvan suikers") }
+    var nutritionSodium: String       { t("Sodium", "Natrium") }
+    var nutritionPotassium: String    { t("Potassium", "Kalium") }
+    var nutritionCalcium: String      { t("Calcium", "Calcium") }
+    var nutritionIron: String         { t("Iron", "IJzer") }
+    var nutritionVitC: String         { t("Vitamin C", "Vitamine C") }
+    var nutritionVitD: String         { t("Vitamin D", "Vitamine D") }
+    var nutritionMinerals: String     { t("Minerals", "Mineralen") }
+    var nutritionVitamins: String     { t("Vitamins", "Vitaminen") }
     var nutritionPer100g: String      { t("per 100 g", "per 100 g") }
     var lookupNutrition: String       { t("Look Up Nutrition", "Voedingswaarden opzoeken") }
     var refreshNutrition: String      { t("Refresh Nutrition", "Voedingswaarden verversen") }
@@ -383,6 +436,12 @@ extension AppLanguage {
     func nutritionIngredientNote(_ n: Int, _ total: Int) -> String {
         t("Based on \(n)/\(total) ingredients (g/ml units only)",
           "Op basis van \(n)/\(total) ingrediënten (g/ml-eenheden)")
+    }
+    var nutritionDailyTotal: String  { t("Nutrition Today", "Voedingswaarden vandaag") }
+    var nutritionWeeklyTotal: String { t("This Week", "Deze week") }
+    var nutritionAvgPerDay: String   { t("avg/day", "gem/dag") }
+    func nutritionMealsTracked(_ n: Int, _ total: Int) -> String {
+        t("Based on \(n) of \(total) meals", "Op basis van \(n) van \(total) maaltijden")
     }
 
     // Notifications
@@ -410,8 +469,9 @@ extension AppLanguage {
 
     // Sorting
     var sortLabel: String      { t("Sort", "Sorteren") }
-    var sortByNameAZ: String   { t("Name A–Z", "Naam A–Z") }
-    var sortByNameZA: String   { t("Name Z–A", "Naam Z–A") }
+    var sortByNameAZ: String      { t("Name A–Z", "Naam A–Z") }
+    var sortByNameZA: String      { t("Name Z–A", "Naam Z–A") }
+    var sortByCategory: String    { t("Category", "Categorie") }
     var sortByPrepAsc: String  { t("Quickest First", "Kortste bereidingstijd") }
     var sortByPrepDesc: String { t("Longest First", "Langste bereidingstijd") }
     var sortNewest: String     { t("Newest First", "Nieuwste eerst") }

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import TipKit
 
 // Three-tier stock filter — defined at file scope so both structs can reference it
 enum StockFilterMode: String, CaseIterable {
@@ -21,6 +22,9 @@ struct RecipeListView: View {
     @Query(sort: \RecipeCategory.name) private var allCategories: [RecipeCategory]
     @Query(sort: \RecipeTag.name) private var allTags: [RecipeTag]
     @Query private var allStorageItems: [StorageItem]
+
+    private let addRecipeTip = AddRecipeTip()
+    private let filterRecipeTip = FilterRecipeTip()
 
     @State private var searchText = ""
     @State private var showAddSheet = false
@@ -132,8 +136,15 @@ struct RecipeListView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if recipes.isEmpty { emptyState } else { list }
+            VStack(spacing: 0) {
+                TipView(addRecipeTip)
+                    .padding(.horizontal)
+                    .padding(.top, 4)
+                TipView(filterRecipeTip)
+                    .padding(.horizontal)
+                Group {
+                    if recipes.isEmpty { emptyState } else { list }
+                }
             }
             .navigationTitle(lang.tabRecipes)
             .searchable(text: $searchText, prompt: lang.searchRecipe)
@@ -313,13 +324,14 @@ private struct RecipeRowView: View {
                 Label(lang.formattedPrepTime(recipe.prepTimeMinutes), systemImage: "clock")
                 Label(lang.ingredientCount(recipe.recipeIngredients.count), systemImage: "list.bullet")
                 stockBadge
-                if recipe.rating > 0 {
-                    StarRatingView(rating: recipe.rating, interactive: false)
-                        .font(.caption)
-                }
             }
             .font(.caption)
             .foregroundStyle(.secondary)
+
+            if recipe.rating > 0 {
+                StarRatingView(rating: recipe.rating, interactive: false)
+                    .font(.caption)
+            }
 
             if recipe.category != nil || !recipe.tags.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {

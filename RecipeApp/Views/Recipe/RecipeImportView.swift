@@ -60,6 +60,18 @@ struct RecipeImportView: View {
                     .onChange(of: mode) { _, _ in loadState = .idle }
                 }
 
+                // ── AI disclaimer ─────────────────────────────────
+                Section {
+                    Label {
+                        Text(lang.aiImportDisclaimer)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } icon: {
+                        Image(systemName: "sparkles")
+                            .foregroundStyle(.tint)
+                    }
+                }
+
                 // ── Input ─────────────────────────────────────────
                 if mode == .url {
                     urlInputSection
@@ -160,10 +172,18 @@ struct RecipeImportView: View {
                         .frame(width: 80, height: 60).clipped()
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                     Spacer()
-                    Button(lang.analyzeButton) {
-                        Task { await analyzeImage(img) }
+                    if #available(iOS 26, macOS 26, *) {
+                        Button(lang.analyzeButton) {
+                            Task { await analyzeImage(img) }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    } else {
+                        Text(lang.aiRequiresiOS26)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.trailing)
+                            .frame(maxWidth: 160)
                     }
-                    .buttonStyle(.borderedProminent)
                 }
             }
 

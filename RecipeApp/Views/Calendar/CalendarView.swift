@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import TipKit
 
 // MARK: - Supporting types
 
@@ -43,6 +44,9 @@ struct CalendarView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppSettings.self) private var appSettings
     @Query(sort: \MealPlan.date) private var allMealPlans: [MealPlan]
+
+    private let addMealPlanTip = AddMealPlanTip()
+    private let shoppingListTip = ShoppingListTip()
 
     @State private var viewMode: CalendarViewMode = .month
     @State private var displayDate: Date = Calendar.current.startOfDay(for: Date())
@@ -95,6 +99,12 @@ struct CalendarView: View {
                 }
 
                 Divider()
+
+                TipView(addMealPlanTip)
+                    .padding(.horizontal)
+                    .padding(.top, 4)
+                TipView(shoppingListTip)
+                    .padding(.horizontal)
 
                 // ── Content ───────────────────────────────────────
                 Group {
@@ -166,6 +176,7 @@ struct CalendarView: View {
                         }
                         Button {
                             activeSheet = .addMeal(displayDate)
+                            addMealPlanTip.invalidate(reason: .actionPerformed)
                         } label: {
                             Label(lang.addMeal, systemImage: "plus")
                         }
@@ -256,7 +267,7 @@ private struct MonthGridView: View {
             VStack(spacing: 4) {
                 // Weekday headers
                 LazyVGrid(columns: columns, spacing: 2) {
-                    ForEach(weekdayHeaders(), id: \.self) { label in
+                    ForEach(Array(weekdayHeaders().enumerated()), id: \.offset) { _, label in
                         Text(label)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
@@ -400,12 +411,24 @@ private struct WeekListView: View {
     private let cal = Calendar.current
 
     var body: some View {
+        let days = weekDates(for: displayDate)
+        let weekMeals = mealPlans.filter { meal in
+            days.contains { cal.isDate(meal.date, inSameDayAs: $0) }
+        }
+        let weekNutrition = NutritionCalculator.nutrition(for: weekMeals)
+        let maxDayKcal: Double = days.map { date in
+            let dayMeals = mealPlans.filter { cal.isDate($0.date, inSameDayAs: date) }
+            return NutritionCalculator.nutrition(for: dayMeals).calories
+        }.max() ?? 1
+
         List {
-            ForEach(weekDates(for: displayDate), id: \.self) { date in
+            // ── Per-day sections ─────────────────────────────
+            ForEach(days, id: \.self) { date in
                 let dayMeals = mealPlans
                     .filter { cal.isDate($0.date, inSameDayAs: date) }
                     .sorted { $0.mealType.sortOrder < $1.mealType.sortOrder }
                 let isSelected = selectedDates.contains(cal.startOfDay(for: date))
+                let dayNutrition = NutritionCalculator.nutrition(for: dayMeals)
 
                 Section {
                     if dayMeals.isEmpty {
@@ -422,6 +445,15 @@ private struct WeekListView: View {
                                         Label(lang.delete, systemImage: "trash")
                                     }
                                 }
+                        }
+
+                        // Compact day nutrition bar
+                        if appSettings.featureNutrition && dayNutrition.hasData {
+                            DayCalorieBar(
+                                nutrition: dayNutrition,
+                                maxKcal: maxDayKcal
+                            )
+                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 8, trailing: 16))
                         }
                     }
                 } header: {
@@ -443,6 +475,13 @@ private struct WeekListView: View {
                                 .foregroundStyle(cal.isDateInToday(date) ? Color.accentColor : .primary)
                             Spacer()
                             if !isSelecting {
+                                // Calorie badge
+                                if appSettings.featureNutrition && dayNutrition.hasData {
+                                    Text("\(Int(dayNutrition.calories.rounded())) kcal")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .monospacedDigit()
+                                }
                                 Image(systemName: "chevron.right")
                                     .font(.caption)
                                     .foregroundStyle(.tertiary)
@@ -450,6 +489,22 @@ private struct WeekListView: View {
                         }
                     }
                     .buttonStyle(.plain)
+                }
+            }
+
+            // ── Weekly nutrition summary ──────────────────────
+            if appSettings.featureNutrition && weekNutrition.hasData {
+                Section {
+                    NutritionSummaryCard(
+                        nutrition: weekNutrition,
+                        averageNutrition: NutritionCalculator.average(weekNutrition, days: 7),
+                        lang: lang,
+                        showAverage: true
+                    )
+                    .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+                    .listRowBackground(Color.clear)
+                } header: {
+                    Text(lang.nutritionWeeklyTotal)
                 }
             }
         }
@@ -495,7 +550,26 @@ private struct DayDetailView: View {
                 .buttonStyle(.borderedProminent)
             }
         } else {
+            let nutrition = NutritionCalculator.nutrition(for: dayMeals)
+
             List {
+                // ── Nutrition summary ─────────────────────────
+                if appSettings.featureNutrition && nutrition.hasData {
+                    Section {
+                        NutritionSummaryCard(
+                            nutrition: nutrition,
+                            averageNutrition: nil,
+                            lang: lang,
+                            showAverage: false
+                        )
+                        .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+                        .listRowBackground(Color.clear)
+                    } header: {
+                        Text(lang.nutritionDailyTotal)
+                    }
+                }
+
+                // ── Meals by type ──────────────────────────────
                 ForEach(MealType.allCases, id: \.self) { mealType in
                     let meals = dayMeals.filter { $0.mealType == mealType }
                     if !meals.isEmpty {
@@ -551,6 +625,124 @@ private struct MealEntryRow: View {
             .foregroundStyle(.secondary)
         }
         .padding(.vertical, 2)
+    }
+}
+
+// MARK: - Nutrition summary card (day + week)
+
+private struct NutritionSummaryCard: View {
+    let nutrition: PeriodNutrition
+    let averageNutrition: PeriodNutrition?   // nil for day view
+    let lang: AppLanguage
+    let showAverage: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+
+            // ── Calorie headline ──────────────────────────────
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("\(Int(nutrition.calories.rounded()))")
+                    .font(.system(.title, design: .rounded)).fontWeight(.bold)
+                    .foregroundStyle(.orange)
+                Text("kcal")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                if showAverage, let avg = averageNutrition {
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 0) {
+                        Text("\(Int(avg.calories.rounded())) kcal")
+                            .font(.subheadline).fontWeight(.semibold).foregroundStyle(.orange.opacity(0.7))
+                        Text(lang.nutritionAvgPerDay)
+                            .font(.caption2).foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            // ── Macro proportion bar ──────────────────────────
+            MacroProportionBar(nutrition: nutrition)
+
+            // ── Macro breakdown ───────────────────────────────
+            HStack(spacing: 0) {
+                macroCell(lang.nutritionProtein, value: nutrition.protein, color: .blue)
+                macroCell(lang.nutritionFat,     value: nutrition.fat,     color: .yellow)
+                macroCell(lang.nutritionCarbs,   value: nutrition.carbs,   color: .green)
+                macroCell(lang.nutritionFiber,   value: nutrition.fiber,   color: .brown)
+            }
+
+            // ── Partial-data note ─────────────────────────────
+            if nutrition.mealsWithData < nutrition.totalMeals {
+                Text(lang.nutritionMealsTracked(nutrition.mealsWithData, nutrition.totalMeals))
+                    .font(.caption2).foregroundStyle(.secondary)
+            }
+        }
+        .padding(12)
+        .background(Color.secondary.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    private func macroCell(_ label: String, value: Double, color: Color) -> some View {
+        VStack(spacing: 2) {
+            Text(String(format: "%.1f", value))
+                .font(.subheadline).fontWeight(.semibold).foregroundStyle(color)
+            Text("g").font(.caption2).foregroundStyle(.secondary)
+            Text(label).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+// MARK: - Macro proportion bar
+
+private struct MacroProportionBar: View {
+    let nutrition: PeriodNutrition
+
+    var body: some View {
+        let total = nutrition.macroKcalTotal
+        guard total > 0 else { return AnyView(EmptyView()) }
+        let p = nutrition.proteinKcal / total
+        let f = nutrition.fatKcal     / total
+        let c = nutrition.carbsKcal   / total
+        return AnyView(
+            GeometryReader { geo in
+                HStack(spacing: 2) {
+                    RoundedRectangle(cornerRadius: 2).fill(Color.blue.opacity(0.7))
+                        .frame(width: geo.size.width * p)
+                    RoundedRectangle(cornerRadius: 2).fill(Color.yellow.opacity(0.7))
+                        .frame(width: geo.size.width * f)
+                    RoundedRectangle(cornerRadius: 2).fill(Color.green.opacity(0.7))
+                        .frame(width: geo.size.width * c)
+                }
+            }
+            .frame(height: 6)
+            .clipShape(RoundedRectangle(cornerRadius: 3))
+        )
+    }
+}
+
+// MARK: - Compact day calorie bar (week view)
+
+private struct DayCalorieBar: View {
+    let nutrition: PeriodNutrition
+    let maxKcal: Double   // week's daily maximum, for relative bar width
+
+    var body: some View {
+        HStack(spacing: 8) {
+            GeometryReader { geo in
+                let fraction = maxKcal > 0 ? min(nutrition.calories / maxKcal, 1.0) : 0
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 3).fill(Color.secondary.opacity(0.12))
+                    RoundedRectangle(cornerRadius: 3).fill(Color.orange.opacity(0.6))
+                        .frame(width: geo.size.width * fraction)
+                }
+            }
+            .frame(height: 6)
+
+            Text("\(Int(nutrition.calories.rounded())) kcal")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+                .frame(width: 68, alignment: .trailing)
+        }
     }
 }
 

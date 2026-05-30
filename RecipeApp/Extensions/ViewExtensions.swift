@@ -86,5 +86,6 @@ struct StarRatingView: View {
                     }
             }
         }
+        .fixedSize()
     }
 }
