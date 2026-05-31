@@ -94,6 +94,23 @@ enum RecipeImportService {
         }
     }
 
+    static func importFromText(_ text: String) async throws -> ImportedRecipeData {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { throw RecipeImportError.noRecipeFound }
+        logger.info("Importing recipe from pasted text (\(trimmed.count) chars)")
+        if #available(macOS 26.0, iOS 26.0, *) {
+            do {
+                return try await parseWithLLM(String(trimmed.prefix(5000)))
+            } catch let e as RecipeImportError {
+                throw e
+            } catch {
+                throw RecipeImportError.aiError(error)
+            }
+        } else {
+            throw RecipeImportError.aiUnavailable
+        }
+    }
+
     static func importFromImage(_ cgImage: CGImage) async throws -> ImportedRecipeData {
         let text = try await recognizeText(in: cgImage)
         guard !text.trimmingCharacters(in: .whitespaces).isEmpty else {

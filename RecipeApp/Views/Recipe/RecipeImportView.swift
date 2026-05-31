@@ -15,13 +15,24 @@ struct RecipeImportView: View {
 
     private var lang: AppLanguage { appSettings.language }
 
+    // Pre-populated values from Share Extension
+    private let prefilledURL: String?
+    private let prefilledText: String?
+
+    init(prefilledURL: String? = nil, prefilledText: String? = nil) {
+        self.prefilledURL = prefilledURL
+        self.prefilledText = prefilledText
+    }
+
     // MARK: - State
 
-    enum ImportMode: String, CaseIterable { case url, photo }
+    enum ImportMode: String, CaseIterable { case url, photo, text }
 
     @State private var mode: ImportMode = .url
     @State private var urlText = ""
+    @State private var pastedText = ""
     @State private var selectedImage: CGImage?
+    @State private var didPrefill = false
 
     // iOS pickers
     @State private var photoPickerItem: PhotosPickerItem?
@@ -55,6 +66,7 @@ struct RecipeImportView: View {
                     Picker("", selection: $mode) {
                         Text(lang.importFromURL).tag(ImportMode.url)
                         Text(lang.importFromPhoto).tag(ImportMode.photo)
+                        Text(lang.importFromText).tag(ImportMode.text)
                     }
                     .pickerStyle(.segmented)
                     .onChange(of: mode) { _, _ in loadState = .idle }
@@ -73,10 +85,10 @@ struct RecipeImportView: View {
                 }
 
                 // ── Input ─────────────────────────────────────────
-                if mode == .url {
-                    urlInputSection
-                } else {
-                    photoInputSection
+                switch mode {
+                case .url:   urlInputSection
+                case .photo: photoInputSection
+                case .text:  textInputSection
                 }
 
                 // ── Result ────────────────────────────────────────
@@ -137,10 +149,24 @@ struct RecipeImportView: View {
                 guard let item else { return }
                 Task { await loadPhotoPickerItem(item) }
             }
+            .onAppear { prefill() }
         }
         #if os(macOS)
         .frame(minWidth: 520, minHeight: 480)
         #endif
+    }
+
+    private func prefill() {
+        guard !didPrefill else { return }
+        didPrefill = true
+        if let url = prefilledURL, !url.isEmpty {
+            mode = .url
+            urlText = url
+            Task { await fetchURL() }
+        } else if let text = prefilledText, !text.isEmpty {
+            mode = .text
+            pastedText = text
+        }
     }
 
     // MARK: - URL Section
@@ -206,6 +232,34 @@ struct RecipeImportView: View {
                 showFilePicker = true
             }
             #endif
+        }
+    }
+
+    // MARK: - Text paste Section
+
+    private var textInputSection: some View {
+        Section(lang.importFromText) {
+            ZStack(alignment: .topLeading) {
+                TextEditor(text: $pastedText)
+                    .frame(minHeight: 160)
+                if pastedText.isEmpty {
+                    Text(lang.textPlaceholder)
+                        .foregroundStyle(.tertiary)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 9)
+                        .allowsHitTesting(false)
+                }
+            }
+            if #available(iOS 26, macOS 26, *) {
+                Button(lang.analyzeButton) {
+                    Task { await analyzeText() }
+                }
+                .disabled(pastedText.trimmingCharacters(in: .whitespaces).isEmpty)
+            } else {
+                Text(lang.aiRequiresiOS26)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -301,6 +355,17 @@ struct RecipeImportView: View {
         loadState = .loading(lang.fetchingURL)
         do {
             let parsed = try await RecipeImportService.importFromURL(urlText)
+            loadState = .success(parsed)
+            populate(from: parsed)
+        } catch {
+            loadState = .failure(error.localizedDescription)
+        }
+    }
+
+    private func analyzeText() async {
+        loadState = .loading(lang.analyzingRecipe)
+        do {
+            let parsed = try await RecipeImportService.importFromText(pastedText)
             loadState = .success(parsed)
             populate(from: parsed)
         } catch {

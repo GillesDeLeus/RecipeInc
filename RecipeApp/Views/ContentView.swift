@@ -4,9 +4,12 @@ import SwiftData
 struct ContentView: View {
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(AppSettings.self) private var appSettings
     @Query(filter: #Predicate<ShoppingListItem> { item in !item.isChecked })
     private var uncheckedShoppingItems: [ShoppingListItem]
+
+    @State private var pendingImport: PendingImport?
 
     var body: some View {
         let lang = appSettings.language
@@ -41,6 +44,21 @@ struct ContentView: View {
                 .tabItem { Label(lang.tabSettings, systemImage: "gear") }
         }
         .onAppear(perform: seedDefaultData)
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active, let item = PendingImportStore.loadAndClear() {
+                pendingImport = item
+            }
+        }
+        .sheet(item: $pendingImport) { item in
+            switch item.kind {
+            case .url:
+                RecipeImportView(prefilledURL: item.content)
+                    .environment(appSettings)
+            case .text:
+                RecipeImportView(prefilledText: item.content)
+                    .environment(appSettings)
+            }
+        }
     }
 
     // MARK: - Seed standard categories and tags on first launch

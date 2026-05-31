@@ -303,6 +303,9 @@ extension AppLanguage {
     var importRecipeTitle: String    { t("Import Recipe", "Recept importeren") }
     var importFromURL: String        { t("From URL", "Via URL") }
     var importFromPhoto: String      { t("From Photo", "Via foto") }
+    var importFromText: String       { t("Paste Text", "Tekst plakken") }
+    var textPlaceholder: String      { t("Paste recipe text here…", "Plak hier de recepttekst…") }
+    var pendingImportBanner: String  { t("A recipe is ready to import.", "Een recept staat klaar om te importeren.") }
     var urlPlaceholder: String       { t("Paste recipe URL…", "Plak recept-URL…") }
     var fetchButton: String          { t("Fetch", "Ophalen") }
     var choosePhoto: String          { t("Choose Image", "Afbeelding kiezen") }
