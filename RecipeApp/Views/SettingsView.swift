@@ -14,6 +14,12 @@ struct SettingsView: View {
     @State private var pendingConflicts: [ImportConflict] = []
     @State private var showConflictSheet = false
 
+    @State private var showFeaturesSheet    = false
+    @State private var showCategoriesSheet  = false
+    @State private var showTagsSheet        = false
+    @State private var showAisleOrderSheet  = false
+    @State private var showPrivacySheet     = false
+
     private struct ImportAlertState: Identifiable {
         let id = UUID()
         let title: String
@@ -38,28 +44,63 @@ struct SettingsView: View {
 
                 // ── Features ─────────────────────────────────────
                 Section {
-                    NavigationLink(lang.featuresTitle) {
-                        FeaturesView()
+                    Button { showFeaturesSheet = true } label: {
+                        HStack {
+                            Text(lang.featuresTitle)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                                .font(.footnote.weight(.semibold))
+                        }
                     }
                 }
 
                 // ── Manage ────────────────────────────────────────
                 Section {
-                    NavigationLink(lang.manageCategories) {
-                        CategoryManagementView()
+                    Button { showCategoriesSheet = true } label: {
+                        HStack {
+                            Text(lang.manageCategories)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                                .font(.footnote.weight(.semibold))
+                        }
                     }
-                    NavigationLink(lang.manageTags) {
-                        TagManagementView()
+                    Button { showTagsSheet = true } label: {
+                        HStack {
+                            Text(lang.manageTags)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                                .font(.footnote.weight(.semibold))
+                        }
                     }
-                    NavigationLink(lang.manageAisleOrder) {
-                        AisleOrderView()
+                    Button { showAisleOrderSheet = true } label: {
+                        HStack {
+                            Text(lang.manageAisleOrder)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                                .font(.footnote.weight(.semibold))
+                        }
                     }
                 }
 
                 // ── Legal ────────────────────────────────────────
                 Section {
-                    NavigationLink(lang.privacyPolicy) {
-                        PrivacyPolicyView()
+                    Button { showPrivacySheet = true } label: {
+                        HStack {
+                            Text(lang.privacyPolicy)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                                .font(.footnote.weight(.semibold))
+                        }
                     }
                 }
 
@@ -130,6 +171,60 @@ struct SettingsView: View {
                         conflict.applyImported()
                     }
                     showConflictSheet = false
+                }
+            }
+            .sheet(isPresented: $showFeaturesSheet) {
+                NavigationStack {
+                    FeaturesView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button(lang.done) { showFeaturesSheet = false }
+                            }
+                        }
+                }
+                .environment(appSettings)
+            }
+            .sheet(isPresented: $showCategoriesSheet) {
+                NavigationStack {
+                    CategoryManagementView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button(lang.done) { showCategoriesSheet = false }
+                            }
+                        }
+                }
+                .environment(appSettings)
+            }
+            .sheet(isPresented: $showTagsSheet) {
+                NavigationStack {
+                    TagManagementView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button(lang.done) { showTagsSheet = false }
+                            }
+                        }
+                }
+                .environment(appSettings)
+            }
+            .sheet(isPresented: $showAisleOrderSheet) {
+                NavigationStack {
+                    AisleOrderView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button(lang.done) { showAisleOrderSheet = false }
+                            }
+                        }
+                }
+                .environment(appSettings)
+            }
+            .sheet(isPresented: $showPrivacySheet) {
+                NavigationStack {
+                    PrivacyPolicyView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button(lang.done) { showPrivacySheet = false }
+                            }
+                        }
                 }
             }
     }

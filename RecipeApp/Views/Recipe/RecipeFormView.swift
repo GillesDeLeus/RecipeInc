@@ -32,6 +32,7 @@ struct RecipeFormView: View {
     @State private var showIngredientPicker = false
     @State private var pendingPhotos: [PhotosPickerItem] = []
     @State private var photoDatas: [Data] = []
+    @State private var photoLoadFailed = false
 
     // Inline creation
     @State private var showAddCategoryAlert = false
@@ -87,6 +88,7 @@ struct RecipeFormView: View {
                 // ── Basic info ────────────────────────────────────
                 Section(lang.nameLabel) {
                     TextField(lang.recipeName, text: $name)
+                        .onChange(of: name) { if name.count > 100 { name = String(name.prefix(100)) } }
                 }
 
                 Section(lang.prepTime) {
@@ -180,13 +182,24 @@ struct RecipeFormView: View {
             .onAppear(perform: loadExisting)
             .onChange(of: pendingPhotos) { _, newItems in
                 Task {
+                    var anyFailed = false
                     for item in newItems {
-                        if let data = try? await item.loadTransferable(type: Data.self) {
-                            photoDatas.append(compressPhoto(data))
+                        do {
+                            if let data = try await item.loadTransferable(type: Data.self) {
+                                photoDatas.append(compressPhoto(data))
+                            }
+                        } catch {
+                            anyFailed = true
                         }
                     }
+                    if anyFailed { photoLoadFailed = true }
                     pendingPhotos = []
                 }
+            }
+            .alert(lang.photoLoadErrorTitle, isPresented: $photoLoadFailed) {
+                Button(lang.ok, role: .cancel) {}
+            } message: {
+                Text(lang.photoLoadErrorMessage)
             }
             .alert(lang.newCategoryTitle, isPresented: $showAddCategoryAlert) {
                 TextField(lang.categoryNamePlaceholder, text: $newCategoryName)

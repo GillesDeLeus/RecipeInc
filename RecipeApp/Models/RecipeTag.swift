@@ -7,6 +7,7 @@ final class RecipeTag {
     var colorHex: String = "#007AFF"
     var isCustom: Bool = false
 
+    @Relationship(deleteRule: .nullify)
     var recipes: [Recipe] = []
 
     static let presetColors = [

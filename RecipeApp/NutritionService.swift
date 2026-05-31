@@ -1,4 +1,7 @@
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "RecipeApp", category: "Nutrition")
 
 struct NutritionInfo {
     let caloriesPer100g: Double

@@ -159,6 +159,11 @@ struct CookModeView: View {
                 }
         )
         .id(currentStep)  // Re-scrolls to top when step changes
+        .accessibilityLabel(lang.stepLabel(currentStep + 1, steps.count) + ": " + steps[currentStep])
+        .accessibilityAction(named: lang.previousStep) { goPrev() }
+        .accessibilityAction(named: isLast ? lang.cookModeFinish : lang.nextStep) {
+            isLast ? dismiss() : goNext()
+        }
     }
 
     private var progressIndicator: some View {

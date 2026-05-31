@@ -87,5 +87,16 @@ struct StarRatingView: View {
             }
         }
         .fixedSize()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Rating")
+        .accessibilityValue(rating == 0 ? "No rating" : "\(rating) out of 5 stars")
+        .accessibilityAdjustableAction { direction in
+            guard interactive else { return }
+            switch direction {
+            case .increment: onRate(min(5, rating + 1))
+            case .decrement: onRate(max(0, rating - 1))
+            @unknown default: break
+            }
+        }
     }
 }

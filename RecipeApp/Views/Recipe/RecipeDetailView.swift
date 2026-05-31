@@ -12,24 +12,22 @@ struct RecipeDetailView: View {
 
     private let cookModeTip = CookModeTip()
 
-    @State private var showEditSheet = false
-    @State private var showDeleteConfirmation = false
-    @State private var showCookMode = false
-    @State private var portions: Int = 1
-    @State private var showFutureScheduledAlert = false
-    @State private var showDeleteWithPastPlans = false
-    @State private var pastPlanCount = 0
-    @State private var futureBlockCount = 0
+    @State private var vm: RecipeDetailViewModel
+
+    init(recipe: Recipe) {
+        self.recipe = recipe
+        self._vm = State(initialValue: RecipeDetailViewModel(recipe: recipe))
+    }
 
     private var lang: AppLanguage { appSettings.language }
 
     // MARK: - Body
 
     var body: some View {
+        @Bindable var vm = vm
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
 
-                // Show cook mode tip at the top so it's immediately visible
                 if !recipe.instructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     TipView(cookModeTip, arrowEdge: .top)
                 }
@@ -98,11 +96,11 @@ struct RecipeDetailView: View {
                         Text(lang.ingredientsTitle)
                             .font(.title2).fontWeight(.semibold)
                         Spacer()
-                        Stepper(value: $portions, in: 1...20) {
+                        Stepper(value: $vm.portions, in: 1...20) {
                             HStack(spacing: 4) {
                                 Text(lang.servingsLabel)
                                     .font(.subheadline).foregroundStyle(.secondary)
-                                Text("\(portions)")
+                                Text("\(vm.portions)")
                                     .font(.subheadline).fontWeight(.semibold).monospacedDigit()
                             }
                         }
@@ -116,7 +114,7 @@ struct RecipeDetailView: View {
                         ForEach(sorted) { line in
                             HStack {
                                 Circle().fill(Color.accentColor).frame(width: 6, height: 6)
-                                Text(scaledDisplay(line)).font(.body)
+                                Text(vm.scaledDisplay(line)).font(.body)
                             }
                         }
                     }
@@ -125,11 +123,11 @@ struct RecipeDetailView: View {
                 if appSettings.featureNutrition, !recipe.recipeIngredients.isEmpty {
                     Divider()
                     VStack(alignment: .leading, spacing: 8) {
-                        if let nutrition = computeNutrition(portions: portions) {
+                        if let nutrition = vm.computeNutrition() {
                             nutritionSection(nutrition)
                         }
-                        if ingredientsMissingNutrition {
-                            Button { lookupAllMissingNutrition() } label: {
+                        if vm.ingredientsMissingNutrition {
+                            Button { vm.lookupAllMissingNutrition() } label: {
                                 Label(lang.lookupNutrition, systemImage: "magnifyingglass")
                             }
                             .font(.subheadline)
@@ -157,25 +155,25 @@ struct RecipeDetailView: View {
             ToolbarItemGroup(placement: .primaryAction) {
                 if !recipe.instructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Button {
-                        showCookMode = true
+                        vm.showCookMode = true
                         cookModeTip.invalidate(reason: .actionPerformed)
                     } label: {
                         Label(lang.cookMode, systemImage: "flame")
                     }
                 }
                 Menu {
-                    ShareLink(item: shareText) {
+                    ShareLink(item: vm.shareText(lang: lang)) {
                         Label(lang.shareRecipe, systemImage: "square.and.arrow.up")
                     }
                     Divider()
-                    Button { showEditSheet = true } label: {
+                    Button { vm.showEditSheet = true } label: {
                         Label(lang.editAction, systemImage: "pencil")
                     }
-                    Button { duplicateRecipe() } label: {
+                    Button { vm.duplicateRecipe(in: modelContext, lang: lang) } label: {
                         Label(lang.duplicateRecipe, systemImage: "doc.on.doc")
                     }
                     Button(role: .destructive) {
-                        requestDelete()
+                        vm.requestDelete(in: modelContext, lang: lang)
                     } label: {
                         Label(lang.delete, systemImage: "trash")
                     }
@@ -184,129 +182,49 @@ struct RecipeDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showEditSheet) {
+        .sheet(isPresented: $vm.showEditSheet) {
             RecipeFormView(recipe: recipe)
         }
         #if os(iOS)
-        .fullScreenCover(isPresented: $showCookMode) {
-            CookModeView(recipe: recipe, portions: portions)
+        .fullScreenCover(isPresented: $vm.showCookMode) {
+            CookModeView(recipe: recipe, portions: vm.portions)
                 .environment(appSettings)
         }
         #else
-        .sheet(isPresented: $showCookMode) {
-            CookModeView(recipe: recipe, portions: portions)
+        .sheet(isPresented: $vm.showCookMode) {
+            CookModeView(recipe: recipe, portions: vm.portions)
                 .environment(appSettings)
                 .frame(minWidth: 620, minHeight: 520)
         }
         #endif
-        // Block: recipe has future calendar entries
-        .alert(lang.recipeFutureScheduledTitle, isPresented: $showFutureScheduledAlert) {
+        .alert(lang.recipeFutureScheduledTitle, isPresented: $vm.showFutureScheduledAlert) {
             Button(lang.cancel, role: .cancel) {}
         } message: {
-            Text(lang.recipeFutureScheduledMessage(recipe.name, futureBlockCount))
+            Text(lang.recipeFutureScheduledMessage(recipe.name, vm.futureBlockCount))
         }
-        // Confirm: recipe has past calendar entries that will also be removed
         .confirmationDialog(lang.deleteRecipeTitle,
-                            isPresented: $showDeleteWithPastPlans,
+                            isPresented: $vm.showDeleteWithPastPlans,
                             titleVisibility: .visible) {
-            Button(lang.delete, role: .destructive) { executeDelete(removePastPlans: true) }
+            Button(lang.delete, role: .destructive) {
+                vm.executeDelete(removePastPlans: true, in: modelContext) { dismiss() }
+            }
             Button(lang.cancel, role: .cancel) {}
         } message: {
-            Text(lang.deleteRecipeWithPastPlansMessage(recipe.name, pastPlanCount))
+            Text(lang.deleteRecipeWithPastPlansMessage(recipe.name, vm.pastPlanCount))
         }
-        // Confirm: no calendar entries at all
         .confirmationDialog(lang.deleteRecipeTitle,
-                            isPresented: $showDeleteConfirmation,
+                            isPresented: $vm.showDeleteConfirmation,
                             titleVisibility: .visible) {
-            Button(lang.delete, role: .destructive) { executeDelete(removePastPlans: false) }
+            Button(lang.delete, role: .destructive) {
+                vm.executeDelete(removePastPlans: false, in: modelContext) { dismiss() }
+            }
             Button(lang.cancel, role: .cancel) {}
         } message: {
             Text(lang.deleteRecipeMessage(recipe.name))
         }
     }
 
-    // MARK: - Nutrition
-
-    private struct RecipeNutrition {
-        var calories:  Double = 0
-        var protein:   Double = 0
-        var fat:       Double = 0
-        var satFat:    Double = 0
-        var carbs:     Double = 0
-        var sugars:    Double = 0
-        var fiber:     Double = 0
-        var sodium:    Double = 0
-        var potassium: Double = 0
-        var calcium:   Double = 0
-        var iron:      Double = 0
-        var vitC:      Double = 0
-        var vitD:      Double = 0
-        var includedCount: Int = 0
-        var totalCount:    Int = 0
-    }
-
-    private var ingredientsMissingNutrition: Bool {
-        recipe.recipeIngredients.contains { $0.ingredient?.caloriesPer100g == nil }
-    }
-
-    private func lookupAllMissingNutrition() {
-        for ri in recipe.recipeIngredients {
-            guard let ingredient = ri.ingredient, ingredient.caloriesPer100g == nil else { continue }
-            if let info = try? NutritionService.lookup(ingredientName: ingredient.name) {
-                ingredient.caloriesPer100g  = info.caloriesPer100g
-                ingredient.proteinPer100g   = info.proteinPer100g
-                ingredient.fatPer100g       = info.fatPer100g
-                ingredient.satFatPer100g    = info.satFatPer100g
-                ingredient.carbsPer100g     = info.carbsPer100g
-                ingredient.sugarsPer100g    = info.sugarsPer100g
-                ingredient.fiberPer100g     = info.fiberPer100g
-                ingredient.sodiumPer100g    = info.sodiumPer100g
-                ingredient.potassiumPer100g = info.potassiumPer100g
-                ingredient.calciumPer100g   = info.calciumPer100g
-                ingredient.ironPer100g      = info.ironPer100g
-                ingredient.vitCPer100g      = info.vitCPer100g
-                ingredient.vitDPer100g      = info.vitDPer100g
-            }
-        }
-    }
-
-    private func computeNutrition(portions: Int) -> RecipeNutrition? {
-        var result = RecipeNutrition()
-        result.totalCount = recipe.recipeIngredients.count
-        for ri in recipe.recipeIngredients {
-            guard let ing = ri.ingredient, let kcal = ing.caloriesPer100g else { continue }
-            let u = ing.unit.lowercased()
-            let scale: Double
-            switch u {
-            case "g", "ml": scale = ri.amount / 100.0
-            case "kg", "l": scale = ri.amount * 10.0
-            case "cl":      scale = ri.amount / 10.0
-            default:        continue
-            }
-            result.calories  += kcal                           * scale
-            result.protein   += (ing.proteinPer100g   ?? 0)   * scale
-            result.fat       += (ing.fatPer100g       ?? 0)   * scale
-            result.satFat    += (ing.satFatPer100g    ?? 0)   * scale
-            result.carbs     += (ing.carbsPer100g     ?? 0)   * scale
-            result.sugars    += (ing.sugarsPer100g    ?? 0)   * scale
-            result.fiber     += (ing.fiberPer100g     ?? 0)   * scale
-            result.sodium    += (ing.sodiumPer100g    ?? 0)   * scale
-            result.potassium += (ing.potassiumPer100g ?? 0)   * scale
-            result.calcium   += (ing.calciumPer100g   ?? 0)   * scale
-            result.iron      += (ing.ironPer100g      ?? 0)   * scale
-            result.vitC      += (ing.vitCPer100g      ?? 0)   * scale
-            result.vitD      += (ing.vitDPer100g      ?? 0)   * scale
-            result.includedCount += 1
-        }
-        guard result.includedCount > 0 else { return nil }
-        let p = Double(portions)
-        result.calories  *= p; result.protein   *= p; result.fat    *= p
-        result.satFat    *= p; result.carbs      *= p; result.sugars *= p
-        result.fiber     *= p; result.sodium     *= p; result.potassium *= p
-        result.calcium   *= p; result.iron       *= p
-        result.vitC      *= p; result.vitD       *= p
-        return result
-    }
+    // MARK: - Nutrition display
 
     @ViewBuilder
     private func nutritionSection(_ n: RecipeNutrition) -> some View {
@@ -314,7 +232,6 @@ struct RecipeDetailView: View {
             Text(lang.nutritionTitle)
                 .font(.title2).fontWeight(.semibold)
 
-            // Macronutrients row
             HStack(spacing: 0) {
                 nutritionCell(lang.nutritionCalories, value: n.calories, unit: "kcal", color: .orange)
                 nutritionCell(lang.nutritionProtein,  value: n.protein,  unit: "g",    color: .blue)
@@ -326,7 +243,6 @@ struct RecipeDetailView: View {
             .background(Color.secondary.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            // Extended nutrients: sub-macros + minerals + vitamins
             VStack(spacing: 6) {
                 nutritionDetailRow(lang.nutritionSatFat,    value: n.satFat,    unit: "g")
                 nutritionDetailRow(lang.nutritionSugars,    value: n.sugars,    unit: "g")
@@ -372,115 +288,5 @@ struct RecipeDetailView: View {
                 .font(.caption).fontWeight(.medium)
             Text(unit).font(.caption).foregroundStyle(.secondary).frame(width: 28, alignment: .leading)
         }
-    }
-
-    // MARK: - Share text
-
-    private var shareText: String {
-        var lines: [String] = [recipe.name, ""]
-        lines.append(lang.formattedPrepTime(recipe.prepTimeMinutes))
-
-        if let cat = recipe.category {
-            lines.append(cat.name)
-        }
-
-        if !recipe.tags.isEmpty {
-            let tagList = recipe.tags.sorted { $0.name < $1.name }.map { $0.name }.joined(separator: ", ")
-            lines.append(tagList)
-        }
-
-        if !recipe.recipeIngredients.isEmpty {
-            lines.append("")
-            lines.append(lang.ingredientsTitle + ":")
-            let sorted = recipe.recipeIngredients
-                .sorted { ($0.ingredient?.name ?? "") < ($1.ingredient?.name ?? "") }
-            for ri in sorted {
-                guard let ing = ri.ingredient else { continue }
-                let amt = ri.amount.truncatingRemainder(dividingBy: 1) == 0
-                    ? String(Int(ri.amount))
-                    : String(format: "%.1f", ri.amount)
-                let entry = ing.unit.isEmpty
-                    ? "• \(amt) \(ing.name)"
-                    : "• \(amt) \(ing.unit) \(ing.name)"
-                lines.append(entry)
-            }
-        }
-
-        let instructions = recipe.instructions.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !instructions.isEmpty {
-            lines.append("")
-            lines.append(lang.preparation + ":")
-            lines.append(instructions)
-        }
-
-        return lines.joined(separator: "\n")
-    }
-
-    // MARK: - Duplication
-
-    private func duplicateRecipe() {
-        let copy = Recipe(
-            name: lang.duplicateRecipeName(recipe.name),
-            instructions: recipe.instructions,
-            prepTimeMinutes: recipe.prepTimeMinutes
-        )
-        copy.category = recipe.category
-        copy.tags = recipe.tags
-        modelContext.insert(copy)
-        for ri in recipe.recipeIngredients {
-            guard let ing = ri.ingredient else { continue }
-            let newLine = RecipeIngredient(ingredient: ing, amount: ri.amount)
-            newLine.recipe = copy
-            copy.recipeIngredients.append(newLine)
-            modelContext.insert(newLine)
-        }
-    }
-
-    // MARK: - Deletion logic
-
-    private func requestDelete() {
-        let today = Calendar.current.startOfDay(for: Date())
-        let plans = mealPlansForThisRecipe()
-        let future = plans.filter { $0.date >= today }
-        let past   = plans.filter { $0.date <  today }
-
-        if !future.isEmpty {
-            futureBlockCount = future.count
-            showFutureScheduledAlert = true
-        } else if !past.isEmpty {
-            pastPlanCount = past.count
-            showDeleteWithPastPlans = true
-        } else {
-            showDeleteConfirmation = true
-        }
-    }
-
-    private func executeDelete(removePastPlans: Bool) {
-        if removePastPlans {
-            let today = Calendar.current.startOfDay(for: Date())
-            for plan in mealPlansForThisRecipe() where plan.date < today {
-                modelContext.delete(plan)
-            }
-        }
-        modelContext.delete(recipe)
-        dismiss()
-    }
-
-    private func mealPlansForThisRecipe() -> [MealPlan] {
-        let all = (try? modelContext.fetch(FetchDescriptor<MealPlan>())) ?? []
-        return all.filter { $0.recipe?.persistentModelID == recipe.persistentModelID }
-    }
-
-    // MARK: - Scaled ingredient display
-
-    private func scaledDisplay(_ line: RecipeIngredient) -> String {
-        guard let ingredient = line.ingredient else { return "–" }
-        let scaled = line.amount * Double(portions)
-        let amtStr = scaled.truncatingRemainder(dividingBy: 1) == 0
-            ? String(Int(scaled))
-            : String(format: "%.1f", scaled)
-        return ingredient.unit.isEmpty
-            ? "\(amtStr) \(ingredient.name)"
-            : "\(amtStr) \(ingredient.unit) \(ingredient.name)"
     }
 }

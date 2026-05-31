@@ -2,13 +2,6 @@ import SwiftUI
 import SwiftData
 import TipKit
 
-enum StorageSortOrder: String, CaseIterable {
-    case byLocation   // default grouped view
-    case nameAsc
-    case nameDesc
-    case expirySoonest
-}
-
 struct StorageListView: View {
 
     @Environment(\.modelContext) private var modelContext
@@ -17,85 +10,16 @@ struct StorageListView: View {
 
     private let addStorageTip = AddStorageTip()
 
-    @State private var showAddSheet = false
-    @State private var itemToEdit: StorageItem?
-    @State private var searchText = ""
-    @State private var sortOrder: StorageSortOrder = .byLocation
-    @State private var filterLocations: Set<StorageLocation> = []
-    @State private var filterCategories: Set<ShoppingCategory> = []
-    @State private var filterExpiringSoon = false
-    @State private var filterExpired = false
-    @State private var showFilterSheet = false
+    @State private var vm = StorageListViewModel()
 
     private var lang: AppLanguage { appSettings.language }
 
-    private var isFiltering: Bool {
-        !filterLocations.isEmpty || !filterCategories.isEmpty
-            || filterExpiringSoon || filterExpired
-    }
-
-    // MARK: - Filtered + sorted items
-
-    private var filtered: [StorageItem] {
-        let today = Calendar.current.startOfDay(for: Date())
-        let in7Days = Calendar.current.date(byAdding: .day, value: 7, to: today)!
-
-        var result = items.filter { item in
-            if !searchText.isEmpty {
-                let name = item.ingredient?.name ?? ""
-                if !name.localizedCaseInsensitiveContains(searchText) { return false }
-            }
-            if !filterLocations.isEmpty, !filterLocations.contains(item.location) { return false }
-            if !filterCategories.isEmpty {
-                guard let cat = item.ingredient?.shoppingCategory,
-                      filterCategories.contains(cat) else { return false }
-            }
-            if filterExpiringSoon {
-                guard let expiry = item.expiryDate,
-                      expiry >= today, expiry <= in7Days else { return false }
-            }
-            if filterExpired {
-                guard let expiry = item.expiryDate, expiry < today else { return false }
-            }
-            return true
-        }
-
-        switch sortOrder {
-        case .byLocation:
-            result.sort {
-                let locOrder = StorageLocation.allCases
-                let li = locOrder.firstIndex(of: $0.location) ?? 0
-                let ri = locOrder.firstIndex(of: $1.location) ?? 0
-                if li != ri { return li < ri }
-                return ($0.ingredient?.name ?? "").localizedCaseInsensitiveCompare(
-                    $1.ingredient?.name ?? "") == .orderedAscending
-            }
-        case .nameAsc:
-            result.sort {
-                ($0.ingredient?.name ?? "").localizedCaseInsensitiveCompare(
-                    $1.ingredient?.name ?? "") == .orderedAscending
-            }
-        case .nameDesc:
-            result.sort {
-                ($0.ingredient?.name ?? "").localizedCaseInsensitiveCompare(
-                    $1.ingredient?.name ?? "") == .orderedDescending
-            }
-        case .expirySoonest:
-            result.sort {
-                switch ($0.expiryDate, $1.expiryDate) {
-                case let (a?, b?): return a < b
-                case (_?, nil):    return true
-                case (nil, _?):    return false
-                default:           return ($0.ingredient?.name ?? "") < ($1.ingredient?.name ?? "")
-                }
-            }
-        }
-        return result
-    }
+    private var filtered: [StorageItem] { vm.filtered(items: items) }
 
     // MARK: - Body
 
     var body: some View {
+        @Bindable var vm = vm
         NavigationStack {
             VStack(spacing: 0) {
                 TipView(addStorageTip)
@@ -110,7 +34,7 @@ struct StorageListView: View {
                         } description: {
                             Text(lang.noShoppingItemsHint)
                         }
-                    } else if sortOrder == .byLocation && !isFiltering && searchText.isEmpty {
+                    } else if vm.sortOrder == .byLocation && !vm.isFiltering && vm.searchText.isEmpty {
                         groupedList
                     } else {
                         flatList
@@ -118,17 +42,17 @@ struct StorageListView: View {
                 }
             }
             .navigationTitle(lang.tabStorage)
-            .searchable(text: $searchText, prompt: lang.searchStorage)
+            .searchable(text: $vm.searchText, prompt: lang.searchStorage)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Menu {
                         ForEach(StorageSortOrder.allCases, id: \.self) { order in
                             Button {
-                                sortOrder = order
+                                vm.sortOrder = order
                             } label: {
                                 HStack {
                                     Text(sortLabel(for: order))
-                                    if sortOrder == order {
+                                    if vm.sortOrder == order {
                                         Spacer()
                                         Image(systemName: "checkmark")
                                     }
@@ -139,31 +63,26 @@ struct StorageListView: View {
                         Label(lang.sortLabel, systemImage: "arrow.up.arrow.down")
                     }
 
-                    Button { showFilterSheet = true } label: {
-                        Label(lang.filterTitle, systemImage: isFiltering
+                    Button { vm.showFilterSheet = true } label: {
+                        Label(lang.filterTitle, systemImage: vm.isFiltering
                               ? "line.3.horizontal.decrease.circle.fill"
                               : "line.3.horizontal.decrease.circle")
                     }
 
-                    Button { showAddSheet = true } label: {
+                    Button { vm.showAddSheet = true } label: {
                         Label(lang.addItem, systemImage: "plus")
                     }
                 }
             }
-            .sheet(item: $itemToEdit) { item in
+            .sheet(item: $vm.itemToEdit) { item in
                 StorageFormView(item: item)
             }
         }
-        .sheet(isPresented: $showAddSheet) {
+        .sheet(isPresented: $vm.showAddSheet) {
             StorageFormView()
         }
-        .sheet(isPresented: $showFilterSheet) {
-            StorageFilterView(
-                filterLocations: $filterLocations,
-                filterCategories: $filterCategories,
-                filterExpiringSoon: $filterExpiringSoon,
-                filterExpired: $filterExpired
-            )
+        .sheet(isPresented: $vm.showFilterSheet) {
+            StorageFilterView(filter: $vm.filter)
         }
     }
 
@@ -178,9 +97,9 @@ struct StorageListView: View {
                         ForEach(locationItems) { item in
                             StorageRowView(item: item)
                                 .contentShape(Rectangle())
-                                .onTapGesture { itemToEdit = item }
+                                .onTapGesture { vm.itemToEdit = item }
                         }
-                        .onDelete { offsets in deleteItems(locationItems, at: offsets) }
+                        .onDelete { offsets in vm.delete(from: locationItems, at: offsets, in: modelContext) }
                     } header: {
                         Label(location.localizedName(in: lang), systemImage: location.icon)
                     }
@@ -196,9 +115,9 @@ struct StorageListView: View {
             ForEach(filtered) { item in
                 StorageRowView(item: item)
                     .contentShape(Rectangle())
-                    .onTapGesture { itemToEdit = item }
+                    .onTapGesture { vm.itemToEdit = item }
             }
-            .onDelete { offsets in deleteItems(filtered, at: offsets) }
+            .onDelete { offsets in vm.delete(from: filtered, at: offsets, in: modelContext) }
         }
     }
 
@@ -208,7 +127,7 @@ struct StorageListView: View {
         } description: {
             Text(lang.addStorageHint)
         } actions: {
-            Button(lang.addItem) { showAddSheet = true }
+            Button(lang.addItem) { vm.showAddSheet = true }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -221,14 +140,6 @@ struct StorageListView: View {
         case .nameAsc:       return lang.sortByNameAZ
         case .nameDesc:      return lang.sortByNameZA
         case .expirySoonest: return lang.sortByExpiry
-        }
-    }
-
-    private func deleteItems(_ source: [StorageItem], at offsets: IndexSet) {
-        for idx in offsets {
-            let item = source[idx]
-            NotificationManager.shared.cancelNotifications(for: item)
-            modelContext.delete(item)
         }
     }
 }
@@ -297,10 +208,7 @@ private struct StorageFilterView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSettings.self) private var appSettings
-    @Binding var filterLocations: Set<StorageLocation>
-    @Binding var filterCategories: Set<ShoppingCategory>
-    @Binding var filterExpiringSoon: Bool
-    @Binding var filterExpired: Bool
+    @Binding var filter: StorageFilter
 
     private var lang: AppLanguage { appSettings.language }
 
@@ -309,20 +217,20 @@ private struct StorageFilterView: View {
             Form {
                 // ── Expiry ────────────────────────────────────────
                 Section(lang.expiryDateSection) {
-                    Toggle(lang.filterExpiringSoon, isOn: $filterExpiringSoon)
-                        .onChange(of: filterExpiringSoon) { _, on in if on { filterExpired = false } }
-                    Toggle(lang.filterExpired, isOn: $filterExpired)
-                        .onChange(of: filterExpired) { _, on in if on { filterExpiringSoon = false } }
+                    Toggle(lang.filterExpiringSoon, isOn: $filter.expiringSoon)
+                        .onChange(of: filter.expiringSoon) { _, on in if on { filter.expired = false } }
+                    Toggle(lang.filterExpired, isOn: $filter.expired)
+                        .onChange(of: filter.expired) { _, on in if on { filter.expiringSoon = false } }
                 }
 
                 // ── Location ──────────────────────────────────────
                 Section(lang.filterByLocation) {
                     ForEach(StorageLocation.allCases, id: \.self) { location in
                         Button {
-                            if filterLocations.contains(location) {
-                                filterLocations.remove(location)
+                            if filter.locations.contains(location) {
+                                filter.locations.remove(location)
                             } else {
-                                filterLocations.insert(location)
+                                filter.locations.insert(location)
                             }
                         } label: {
                             HStack(spacing: 12) {
@@ -332,7 +240,7 @@ private struct StorageFilterView: View {
                                 Text(location.localizedName(in: lang))
                                     .foregroundStyle(.primary)
                                 Spacer()
-                                if filterLocations.contains(location) {
+                                if filter.locations.contains(location) {
                                     Image(systemName: "checkmark")
                                         .foregroundStyle(Color.accentColor)
                                 }
@@ -345,10 +253,10 @@ private struct StorageFilterView: View {
                 Section(lang.shoppingCategoryLabel) {
                     ForEach(ShoppingCategory.allCases) { category in
                         Button {
-                            if filterCategories.contains(category) {
-                                filterCategories.remove(category)
+                            if filter.categories.contains(category) {
+                                filter.categories.remove(category)
                             } else {
-                                filterCategories.insert(category)
+                                filter.categories.insert(category)
                             }
                         } label: {
                             HStack(spacing: 12) {
@@ -358,7 +266,7 @@ private struct StorageFilterView: View {
                                 Text(category.localizedName(in: lang))
                                     .foregroundStyle(.primary)
                                 Spacer()
-                                if filterCategories.contains(category) {
+                                if filter.categories.contains(category) {
                                     Image(systemName: "checkmark")
                                         .foregroundStyle(Color.accentColor)
                                 }
@@ -372,12 +280,7 @@ private struct StorageFilterView: View {
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.reset) {
-                        filterLocations = []
-                        filterCategories = []
-                        filterExpiringSoon = false
-                        filterExpired = false
-                    }
+                    Button(lang.reset) { filter.reset() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(lang.done) { dismiss() }

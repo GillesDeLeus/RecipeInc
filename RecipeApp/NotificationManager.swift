@@ -1,5 +1,8 @@
 import Foundation
 import UserNotifications
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "RecipeApp", category: "Notifications")
 
 final class NotificationManager {
 
@@ -7,7 +10,13 @@ final class NotificationManager {
     private init() {}
 
     func requestAuthorization() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if let error {
+                logger.error("Notification authorization failed: \(error.localizedDescription)")
+            } else {
+                logger.info("Notification authorization granted: \(granted)")
+            }
+        }
     }
 
     // Schedule 2-day and 1-day-before notifications, or cancel if no expiry date.
@@ -35,17 +44,25 @@ final class NotificationManager {
             content.sound = .default
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+            let identifier = "\(item.notificationToken)-\(daysOffset)d"
             let request = UNNotificationRequest(
-                identifier: "\(item.notificationToken)-\(daysOffset)d",
+                identifier: identifier,
                 content: content,
                 trigger: trigger
             )
-            center.add(request) { _ in }
+            center.add(request) { error in
+                if let error {
+                    logger.error("Failed to schedule notification \(identifier): \(error.localizedDescription)")
+                } else {
+                    logger.debug("Scheduled notification \(identifier) for \(fireDate)")
+                }
+            }
         }
     }
 
     func cancelNotifications(for item: StorageItem) {
         let ids = ["\(item.notificationToken)-2d", "\(item.notificationToken)-1d"]
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
+        logger.debug("Cancelled notifications for token \(item.notificationToken)")
     }
 }

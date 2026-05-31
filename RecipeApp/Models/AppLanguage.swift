@@ -87,11 +87,14 @@ extension AppLanguage {
     var save: String        { t("Save", "Bewaar") }
     var addItem: String     { t("Add", "Voeg toe") }
     var done: String        { t("Done", "Klaar") }
+    var ok: String          { t("OK", "OK") }
     var reset: String       { t("Reset", "Reset") }
     var delete: String      { t("Delete", "Verwijderen") }
     var editAction: String   { t("Edit", "Bewerken") }
     var shareRecipe: String  { t("Share Recipe", "Recept delen") }
     var noLimit: String     { t("No limit", "Geen limiet") }
+    var photoLoadErrorTitle: String   { t("Photo Error", "Fotofout") }
+    var photoLoadErrorMessage: String { t("One or more photos could not be loaded.", "Één of meerdere foto's konden niet worden geladen.") }
 
     // Tabs
     var tabRecipes: String      { t("Recipes", "Recepten") }

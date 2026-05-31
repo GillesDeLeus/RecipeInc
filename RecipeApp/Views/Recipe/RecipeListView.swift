@@ -2,17 +2,6 @@ import SwiftUI
 import SwiftData
 import TipKit
 
-// Three-tier stock filter — defined at file scope so both structs can reference it
-enum StockFilterMode: String, CaseIterable {
-    case all           // no filter
-    case canCook       // 0 ingredients missing from storage
-    case almostCanCook // ≤2 ingredients missing from storage
-}
-
-enum RecipeSortOrder: String, CaseIterable {
-    case nameAsc, nameDesc, prepAsc, prepDesc, newest, oldest
-}
-
 struct RecipeListView: View {
 
     @Environment(\.modelContext) private var modelContext
@@ -26,115 +15,24 @@ struct RecipeListView: View {
     private let addRecipeTip = AddRecipeTip()
     private let filterRecipeTip = FilterRecipeTip()
 
-    @State private var searchText = ""
-    @State private var showAddSheet = false
-    @State private var showImportSheet = false
-    @State private var showFilterPanel = false
-    @State private var deletionAlert: DeletionAlert?
-    @State private var sortOrder: RecipeSortOrder = .nameAsc
+    @State private var vm = RecipeListViewModel()
 
-    private struct DeletionAlert: Identifiable {
-        let id = UUID()
-        let title: String
-        let message: String
+    private var lang: AppLanguage { appSettings.language }
+
+    private var filtered: [Recipe] {
+        vm.filtered(recipes: recipes, storageItems: allStorageItems)
     }
 
-    // MARK: - Filter state
-
-    @State private var filterMinMinutes: Double = 0
-    @State private var filterMaxMinutes: Double = 240
-    @State private var includedIngredientIDs: Set<PersistentIdentifier> = []
-    @State private var excludedIngredientIDs: Set<PersistentIdentifier> = []
-    @State private var filterFavoritesOnly = false
-    @State private var filterCategoryIDs: Set<PersistentIdentifier> = []
-    @State private var filterTagIDs: Set<PersistentIdentifier> = []
-    @State private var filterStockMode: StockFilterMode = .all
-    @State private var filterMinRating: Int = 0
-
-    // MARK: - Stock helpers
-
-    /// IDs of ingredients that are currently in storage (any amount, any location).
     private var inStockIDs: Set<PersistentIdentifier> {
-        Set(allStorageItems.compactMap { $0.ingredient?.persistentModelID })
+        vm.inStockIDs(from: allStorageItems)
     }
 
     private var hasStorageData: Bool { !allStorageItems.isEmpty }
 
-    // MARK: - Active-filter indicator
-
-    private var isFiltering: Bool {
-        filterMinMinutes > 0 || filterMaxMinutes < 240
-            || !includedIngredientIDs.isEmpty || !excludedIngredientIDs.isEmpty
-            || filterFavoritesOnly
-            || !filterCategoryIDs.isEmpty || !filterTagIDs.isEmpty
-            || filterStockMode != .all
-            || filterMinRating > 0
-    }
-
-    // MARK: - Filtered list
-
-    private var filtered: [Recipe] {
-        let stockIDs = inStockIDs
-        var result = recipes.filter { recipe in
-            if !searchText.isEmpty,
-               !recipe.name.localizedCaseInsensitiveContains(searchText) { return false }
-
-            if filterFavoritesOnly && !recipe.isFavorite { return false }
-
-            let mins = Double(recipe.prepTimeMinutes)
-            if filterMinMinutes > 0 && mins < filterMinMinutes { return false }
-            if filterMaxMinutes < 240 && mins > filterMaxMinutes { return false }
-
-            if !filterCategoryIDs.isEmpty {
-                guard let catID = recipe.category?.persistentModelID,
-                      filterCategoryIDs.contains(catID) else { return false }
-            }
-
-            if !filterTagIDs.isEmpty {
-                let recipeTagIDs = Set(recipe.tags.map { $0.persistentModelID })
-                if filterTagIDs.isDisjoint(with: recipeTagIDs) { return false }
-            }
-
-            if !includedIngredientIDs.isEmpty {
-                let ids = Set(recipe.recipeIngredients.compactMap { $0.ingredient?.persistentModelID })
-                if !includedIngredientIDs.isSubset(of: ids) { return false }
-            }
-
-            if !excludedIngredientIDs.isEmpty {
-                let ids = Set(recipe.recipeIngredients.compactMap { $0.ingredient?.persistentModelID })
-                if !excludedIngredientIDs.isDisjoint(with: ids) { return false }
-            }
-
-            if filterStockMode != .all {
-                let missing = missingCount(for: recipe, inStockIDs: stockIDs)
-                switch filterStockMode {
-                case .canCook:       if missing > 0 { return false }
-                case .almostCanCook: if missing > 2 { return false }
-                case .all: break
-                }
-            }
-
-            if filterMinRating > 0 && recipe.rating < filterMinRating { return false }
-
-            return true
-        }
-
-        switch sortOrder {
-        case .nameAsc:  result.sort { $0.name.localizedCompare($1.name) == .orderedAscending }
-        case .nameDesc: result.sort { $0.name.localizedCompare($1.name) == .orderedDescending }
-        case .prepAsc:  result.sort { $0.prepTimeMinutes < $1.prepTimeMinutes }
-        case .prepDesc: result.sort { $0.prepTimeMinutes > $1.prepTimeMinutes }
-        case .newest:   result.sort { $0.createdAt > $1.createdAt }
-        case .oldest:   result.sort { $0.createdAt < $1.createdAt }
-        }
-        return result
-    }
-
-    private var lang: AppLanguage { appSettings.language }
-
     // MARK: - Body
 
     var body: some View {
+        @Bindable var vm = vm
         NavigationStack {
             VStack(spacing: 0) {
                 TipView(addRecipeTip)
@@ -147,17 +45,17 @@ struct RecipeListView: View {
                 }
             }
             .navigationTitle(lang.tabRecipes)
-            .searchable(text: $searchText, prompt: lang.searchRecipe)
+            .searchable(text: $vm.searchText, prompt: lang.searchRecipe)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Menu {
                         ForEach(RecipeSortOrder.allCases, id: \.self) { order in
                             Button {
-                                sortOrder = order
+                                vm.sortOrder = order
                             } label: {
                                 HStack {
                                     Text(sortLabel(for: order))
-                                    if sortOrder == order {
+                                    if vm.sortOrder == order {
                                         Spacer()
                                         Image(systemName: "checkmark")
                                     }
@@ -167,17 +65,17 @@ struct RecipeListView: View {
                     } label: {
                         Label(lang.sortLabel, systemImage: "arrow.up.arrow.down")
                     }
-                    Button { showFilterPanel = true } label: {
-                        Label(lang.filterTitle, systemImage: isFiltering
+                    Button { vm.showFilterPanel = true } label: {
+                        Label(lang.filterTitle, systemImage: vm.isFiltering
                               ? "line.3.horizontal.decrease.circle.fill"
                               : "line.3.horizontal.decrease.circle")
                     }
                     Menu {
-                        Button { showAddSheet = true } label: {
+                        Button { vm.showAddSheet = true } label: {
                             Label(lang.newRecipe, systemImage: "square.and.pencil")
                         }
                         if appSettings.featureAIImport {
-                            Button { showImportSheet = true } label: {
+                            Button { vm.showImportSheet = true } label: {
                                 Label(lang.importRecipeBtn, systemImage: "square.and.arrow.down")
                             }
                         }
@@ -186,26 +84,18 @@ struct RecipeListView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showAddSheet) { RecipeFormView() }
-            .sheet(isPresented: $showImportSheet) { RecipeImportView() }
-            .alert(item: $deletionAlert) { alert in
+            .sheet(isPresented: $vm.showAddSheet) { RecipeFormView() }
+            .sheet(isPresented: $vm.showImportSheet) { RecipeImportView() }
+            .alert(item: $vm.deletionAlert) { alert in
                 Alert(title: Text(alert.title), message: Text(alert.message))
             }
         }
-        .sheet(isPresented: $showFilterPanel) {
+        .sheet(isPresented: $vm.showFilterPanel) {
             RecipeFilterView(
                 allIngredients: allIngredients,
                 allCategories: allCategories,
                 allTags: allTags,
-                minMinutes: $filterMinMinutes,
-                maxMinutes: $filterMaxMinutes,
-                includedIDs: $includedIngredientIDs,
-                excludedIDs: $excludedIngredientIDs,
-                favoritesOnly: $filterFavoritesOnly,
-                categoryIDs: $filterCategoryIDs,
-                tagIDs: $filterTagIDs,
-                stockMode: $filterStockMode,
-                minRating: $filterMinRating
+                filter: $vm.filter
             )
         }
     }
@@ -233,7 +123,7 @@ struct RecipeListView: View {
         } description: {
             Text(lang.addFirstRecipe)
         } actions: {
-            Button(lang.addRecipeBtn) { showAddSheet = true }
+            Button(lang.addRecipeBtn) { vm.showAddSheet = true }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -252,35 +142,10 @@ struct RecipeListView: View {
     }
 
     private func delete(at offsets: IndexSet) {
-        let today = Calendar.current.startOfDay(for: Date())
         let toDelete = offsets.map { filtered[$0] }
         for recipe in toDelete {
-            let plans = mealPlansFor(recipe: recipe)
-            let futurePlans = plans.filter { $0.date >= today }
-            if !futurePlans.isEmpty {
-                deletionAlert = DeletionAlert(
-                    title: lang.recipeFutureScheduledTitle,
-                    message: lang.recipeFutureScheduledMessage(recipe.name, futurePlans.count)
-                )
-            } else {
-                for plan in plans where plan.date < today { modelContext.delete(plan) }
-                modelContext.delete(recipe)
-            }
+            vm.delete(recipe: recipe, in: modelContext, lang: lang)
         }
-    }
-
-    private func mealPlansFor(recipe: Recipe) -> [MealPlan] {
-        let all = (try? modelContext.fetch(FetchDescriptor<MealPlan>())) ?? []
-        return all.filter { $0.recipe?.persistentModelID == recipe.persistentModelID }
-    }
-
-    private func missingCount(for recipe: Recipe, inStockIDs: Set<PersistentIdentifier>) -> Int {
-        let total = recipe.recipeIngredients.count
-        let inStock = recipe.recipeIngredients.filter {
-            guard let ing = $0.ingredient else { return false }
-            return inStockIDs.contains(ing.persistentModelID)
-        }.count
-        return total - inStock
     }
 }
 
@@ -387,15 +252,7 @@ private struct RecipeFilterView: View {
     let allIngredients: [Ingredient]
     let allCategories: [RecipeCategory]
     let allTags: [RecipeTag]
-    @Binding var minMinutes: Double
-    @Binding var maxMinutes: Double
-    @Binding var includedIDs: Set<PersistentIdentifier>
-    @Binding var excludedIDs: Set<PersistentIdentifier>
-    @Binding var favoritesOnly: Bool
-    @Binding var categoryIDs: Set<PersistentIdentifier>
-    @Binding var tagIDs: Set<PersistentIdentifier>
-    @Binding var stockMode: StockFilterMode
-    @Binding var minRating: Int
+    @Binding var filter: RecipeFilter
 
     @State private var showIncludedPicker = false
     @State private var showExcludedPicker = false
@@ -416,28 +273,28 @@ private struct RecipeFilterView: View {
 
                 // ── Favourites ────────────────────────────────────
                 Section {
-                    Toggle(lang.favoritesOnly, isOn: $favoritesOnly)
+                    Toggle(lang.favoritesOnly, isOn: $filter.favoritesOnly)
                 }
 
                 // ── Rating ────────────────────────────────────────
                 Section(lang.filterByRating) {
-                    Button { minRating = 0 } label: {
+                    Button { filter.minRating = 0 } label: {
                         HStack {
                             Text(lang.ratingAny).foregroundStyle(.primary)
                             Spacer()
-                            if minRating == 0 {
+                            if filter.minRating == 0 {
                                 Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
                             }
                         }
                     }
                     ForEach(1...5, id: \.self) { stars in
-                        Button { minRating = stars } label: {
+                        Button { filter.minRating = stars } label: {
                             HStack {
                                 StarRatingView(rating: stars, interactive: false)
                                     .font(.subheadline)
                                 Text("& up").font(.subheadline).foregroundStyle(.secondary)
                                 Spacer()
-                                if minRating == stars {
+                                if filter.minRating == stars {
                                     Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
                                 }
                             }
@@ -448,24 +305,28 @@ private struct RecipeFilterView: View {
                 // ── Prep time ─────────────────────────────────────
                 Section(lang.prepTimeRange) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(lang.minimumLabel(lang.formattedFilterTime(minMinutes))).font(.subheadline)
-                        Slider(value: $minMinutes, in: 0...240, step: 5)
-                            .onChange(of: minMinutes) { _, val in if val > maxMinutes { maxMinutes = val } }
+                        Text(lang.minimumLabel(lang.formattedFilterTime(filter.minMinutes))).font(.subheadline)
+                        Slider(value: $filter.minMinutes, in: 0...240, step: 5)
+                            .onChange(of: filter.minMinutes) { _, val in
+                                if val > filter.maxMinutes { filter.maxMinutes = val }
+                            }
                     }
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(lang.maximumLabel(lang.formattedFilterTime(maxMinutes, isMax: true))).font(.subheadline)
-                        Slider(value: $maxMinutes, in: 0...240, step: 5)
-                            .onChange(of: maxMinutes) { _, val in if val < minMinutes { minMinutes = val } }
+                        Text(lang.maximumLabel(lang.formattedFilterTime(filter.maxMinutes, isMax: true))).font(.subheadline)
+                        Slider(value: $filter.maxMinutes, in: 0...240, step: 5)
+                            .onChange(of: filter.maxMinutes) { _, val in
+                                if val < filter.minMinutes { filter.minMinutes = val }
+                            }
                     }
                 }
 
                 // ── Categories ────────────────────────────────────
                 Section(lang.filterByCategory) {
-                    ForEach(allCategories.filter { categoryIDs.contains($0.persistentModelID) }) { cat in
+                    ForEach(allCategories.filter { filter.categoryIDs.contains($0.persistentModelID) }) { cat in
                         HStack {
                             Text(cat.name)
                             Spacer()
-                            Button { categoryIDs.remove(cat.persistentModelID) } label: {
+                            Button { filter.categoryIDs.remove(cat.persistentModelID) } label: {
                                 Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                             }
                             .buttonStyle(.plain)
@@ -478,12 +339,12 @@ private struct RecipeFilterView: View {
 
                 // ── Tags ──────────────────────────────────────────
                 Section(lang.filterByTags) {
-                    ForEach(allTags.filter { tagIDs.contains($0.persistentModelID) }) { tag in
+                    ForEach(allTags.filter { filter.tagIDs.contains($0.persistentModelID) }) { tag in
                         HStack(spacing: 10) {
                             Circle().fill(Color(hex: tag.colorHex)).frame(width: 10, height: 10)
                             Text(tag.name)
                             Spacer()
-                            Button { tagIDs.remove(tag.persistentModelID) } label: {
+                            Button { filter.tagIDs.remove(tag.persistentModelID) } label: {
                                 Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                             }
                             .buttonStyle(.plain)
@@ -496,15 +357,14 @@ private struct RecipeFilterView: View {
 
                 // ── Included ingredients ──────────────────────────
                 Section(lang.includedIngredients) {
-                    ForEach(allIngredients.filter { includedIDs.contains($0.persistentModelID) }) { ingredient in
+                    ForEach(allIngredients.filter { filter.includedIngredientIDs.contains($0.persistentModelID) }) { ingredient in
                         HStack {
                             Text(ingredient.name)
                             Spacer()
                             Button {
-                                includedIDs.remove(ingredient.persistentModelID)
+                                filter.includedIngredientIDs.remove(ingredient.persistentModelID)
                             } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.secondary)
+                                Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                             }
                             .buttonStyle(.plain)
                         }
@@ -516,15 +376,14 @@ private struct RecipeFilterView: View {
 
                 // ── Excluded ingredients ──────────────────────────
                 Section(lang.excludedIngredients) {
-                    ForEach(allIngredients.filter { excludedIDs.contains($0.persistentModelID) }) { ingredient in
+                    ForEach(allIngredients.filter { filter.excludedIngredientIDs.contains($0.persistentModelID) }) { ingredient in
                         HStack {
                             Text(ingredient.name)
                             Spacer()
                             Button {
-                                excludedIDs.remove(ingredient.persistentModelID)
+                                filter.excludedIngredientIDs.remove(ingredient.persistentModelID)
                             } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.secondary)
+                                Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                             }
                             .buttonStyle(.plain)
                         }
@@ -540,43 +399,36 @@ private struct RecipeFilterView: View {
             .navigationDestination(isPresented: $showIncludedPicker) {
                 IngredientPickerNavView(
                     allIngredients: allIngredients,
-                    selectedIDs: $includedIDs,
-                    conflictIDs: $excludedIDs,
+                    selectedIDs: $filter.includedIngredientIDs,
+                    conflictIDs: $filter.excludedIngredientIDs,
                     title: lang.includedIngredients
                 )
             }
             .navigationDestination(isPresented: $showExcludedPicker) {
                 IngredientPickerNavView(
                     allIngredients: allIngredients,
-                    selectedIDs: $excludedIDs,
-                    conflictIDs: $includedIDs,
+                    selectedIDs: $filter.excludedIngredientIDs,
+                    conflictIDs: $filter.includedIngredientIDs,
                     title: lang.excludedIngredients
                 )
             }
             .navigationDestination(isPresented: $showCategoryPicker) {
                 CategoryPickerNavView(
                     allCategories: allCategories,
-                    selectedIDs: $categoryIDs,
+                    selectedIDs: $filter.categoryIDs,
                     title: lang.filterByCategory
                 )
             }
             .navigationDestination(isPresented: $showTagPicker) {
                 TagPickerNavView(
                     allTags: allTags,
-                    selectedIDs: $tagIDs,
+                    selectedIDs: $filter.tagIDs,
                     title: lang.filterByTags
                 )
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.reset) {
-                        minMinutes = 0; maxMinutes = 240
-                        includedIDs = []; excludedIDs = []
-                        favoritesOnly = false
-                        categoryIDs = []; tagIDs = []
-                        stockMode = .all
-                        minRating = 0
-                    }
+                    Button(lang.reset) { filter.reset() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(lang.done) { dismiss() }
@@ -587,26 +439,16 @@ private struct RecipeFilterView: View {
 
     @ViewBuilder
     private func stockModeRow(_ mode: StockFilterMode, label: String, icon: String, color: Color = .secondary) -> some View {
-        Button { stockMode = mode } label: {
+        Button { filter.stockMode = mode } label: {
             HStack(spacing: 10) {
                 Image(systemName: icon).foregroundStyle(color)
                 Text(label).foregroundStyle(.primary)
                 Spacer()
-                if stockMode == mode {
+                if filter.stockMode == mode {
                     Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
                 }
             }
         }
-    }
-
-    private func toggle(_ id: PersistentIdentifier, in target: inout Set<PersistentIdentifier>) {
-        if target.contains(id) { target.remove(id) } else { target.insert(id) }
-    }
-
-    private func toggle(_ id: PersistentIdentifier,
-                        in target: inout Set<PersistentIdentifier>,
-                        removing other: inout Set<PersistentIdentifier>) {
-        if target.contains(id) { target.remove(id) } else { target.insert(id); other.remove(id) }
     }
 }
 

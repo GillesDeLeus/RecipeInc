@@ -1,4 +1,14 @@
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "RecipeApp", category: "Barcode")
+
+private let barcodeSession: URLSession = {
+    let config = URLSessionConfiguration.default
+    config.timeoutIntervalForRequest = 10
+    config.timeoutIntervalForResource = 15
+    return URLSession(configuration: config)
+}()
 
 struct BarcodeProduct {
     let name: String
@@ -22,12 +32,16 @@ enum BarcodeService {
         let urlString = "https://world.openfoodfacts.org/api/v0/product/\(barcode).json"
         guard let url = URL(string: urlString) else { throw BarcodeServiceError.notFound }
 
-        let (data, _) = try await URLSession.shared.data(from: url)
+        logger.debug("Looking up barcode: \(barcode)")
+        let (data, _) = try await barcodeSession.data(from: url)
 
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               (json["status"] as? Int) == 1,
               let product = json["product"] as? [String: Any]
-        else { throw BarcodeServiceError.notFound }
+        else {
+            logger.notice("Barcode not found: \(barcode)")
+            throw BarcodeServiceError.notFound
+        }
 
         // Prefer Dutch name, fall back to generic product name
         let nameCandidates = [product["product_name_nl"], product["product_name"]]
@@ -62,13 +76,13 @@ enum BarcodeService {
     }
 
     private static func deriveUnit(from quantity: String?) -> String {
-        guard let q = quantity?.lowercased() else { return "stuk" }
+        guard let q = quantity?.lowercased() else { return "" }
         if q.contains("kg")                                    { return "kg" }
         if q.contains("g"), !q.contains("mg")                 { return "g" }
         if q.contains("cl")                                    { return "cl" }
         if q.contains("ml")                                    { return "ml" }
         if q.contains("l"), !q.contains("cl"), !q.contains("ml") { return "l" }
-        return "stuk"
+        return ""
     }
 
     private static func mapCategory(from tags: [String]) -> ShoppingCategory {

@@ -7,27 +7,22 @@ struct PersistentShoppingListView: View {
     @Environment(AppSettings.self) private var appSettings
     @Query(sort: \ShoppingListItem.name) private var items: [ShoppingListItem]
 
-    @State private var showAddSheet = false
-    @State private var isGrouped = true
+    @State private var vm = ShoppingListViewModel()
 
     private var lang: AppLanguage { appSettings.language }
 
     private var groupedItems: [(ShoppingCategory, [ShoppingListItem])] {
-        appSettings.aisleOrder.compactMap { cat in
-            let catItems = items
-                .filter { $0.category == cat }
-                .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-            return catItems.isEmpty ? nil : (cat, catItems)
-        }
+        vm.groupedItems(from: items, aisleOrder: appSettings.aisleOrder)
     }
 
     var body: some View {
+        @Bindable var vm = vm
         NavigationStack {
             VStack(spacing: 0) {
                 Group {
                     if items.isEmpty {
                         emptyState
-                    } else if isGrouped {
+                    } else if vm.isGrouped {
                         groupedList
                     } else {
                         flatList
@@ -37,20 +32,20 @@ struct PersistentShoppingListView: View {
             .navigationTitle(lang.shoppingList)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
-                    Button { showAddSheet = true } label: {
+                    Button { vm.showAddSheet = true } label: {
                         Label(lang.addItem, systemImage: "plus")
                     }
                 }
                 ToolbarItemGroup(placement: .secondaryAction) {
                     Button {
-                        isGrouped.toggle()
+                        vm.isGrouped.toggle()
                     } label: {
                         Label(lang.groupByCategory,
-                              systemImage: isGrouped ? "rectangle.3.group.fill" : "rectangle.3.group")
+                              systemImage: vm.isGrouped ? "rectangle.3.group.fill" : "rectangle.3.group")
                     }
                     if items.contains(where: { $0.isChecked }) {
                         Button(role: .destructive) {
-                            clearChecked()
+                            vm.clearChecked(from: items, in: modelContext)
                         } label: {
                             Label(lang.clearChecked, systemImage: "trash")
                         }
@@ -58,7 +53,7 @@ struct PersistentShoppingListView: View {
                 }
             }
         }
-        .sheet(isPresented: $showAddSheet) {
+        .sheet(isPresented: $vm.showAddSheet) {
             AddShoppingItemSheet()
                 .environment(appSettings)
         }
@@ -74,7 +69,7 @@ struct PersistentShoppingListView: View {
                         itemRow(item)
                     }
                     .onDelete { offsets in
-                        deleteItems(catItems, at: offsets)
+                        vm.deleteItems(catItems, at: offsets, in: modelContext)
                     }
                 } header: {
                     Label(category.localizedName(in: lang), systemImage: category.icon)
@@ -89,7 +84,7 @@ struct PersistentShoppingListView: View {
                 itemRow(item)
             }
             .onDelete { offsets in
-                deleteItems(items, at: offsets)
+                vm.deleteItems(items, at: offsets, in: modelContext)
             }
         }
     }
@@ -100,7 +95,7 @@ struct PersistentShoppingListView: View {
         } description: {
             Text(lang.myListEmptyHint)
         } actions: {
-            Button(lang.addShoppingItemTitle) { showAddSheet = true }
+            Button(lang.addShoppingItemTitle) { vm.showAddSheet = true }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -116,7 +111,7 @@ struct PersistentShoppingListView: View {
                     .font(.title3)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(formattedItem(item))
+                    Text(vm.formattedItem(item))
                         .strikethrough(item.isChecked)
                         .foregroundStyle(item.isChecked ? Color.secondary : Color.primary)
                 }
@@ -129,56 +124,6 @@ struct PersistentShoppingListView: View {
             }
         }
         .buttonStyle(.plain)
-    }
-
-    // MARK: - Helpers
-
-    private func formattedItem(_ item: ShoppingListItem) -> String {
-        let amt = item.amount.truncatingRemainder(dividingBy: 1) == 0
-            ? String(Int(item.amount))
-            : String(format: "%.1f", item.amount)
-        let amtStr = item.unit.isEmpty ? amt : "\(amt) \(item.unit)"
-        return "\(amtStr) \(item.name)"
-    }
-
-    private func clearChecked() {
-        let checked = items.filter { $0.isChecked }
-        let allIngredients = (try? modelContext.fetch(FetchDescriptor<Ingredient>())) ?? []
-        let allStorage = (try? modelContext.fetch(FetchDescriptor<StorageItem>())) ?? []
-        for shoppingItem in checked {
-            let location = defaultLocation(for: shoppingItem.category)
-            let ingredient: Ingredient
-            let isNew: Bool
-            if let existing = allIngredients.first(where: {
-                $0.name.localizedCaseInsensitiveCompare(shoppingItem.name) == .orderedSame
-            }) {
-                ingredient = existing
-                isNew = false
-            } else {
-                let newIng = Ingredient(name: shoppingItem.name, unit: shoppingItem.unit, shoppingCategory: shoppingItem.category)
-                modelContext.insert(newIng)
-                ingredient = newIng
-                isNew = true
-            }
-            if !isNew, let existing = allStorage.first(where: { $0.ingredient === ingredient && $0.location == location }) {
-                existing.amount += shoppingItem.amount
-            } else {
-                modelContext.insert(StorageItem(ingredient: ingredient, amount: shoppingItem.amount, location: location))
-            }
-            modelContext.delete(shoppingItem)
-        }
-    }
-
-    private func defaultLocation(for category: ShoppingCategory) -> StorageLocation {
-        switch category {
-        case .frozen:                  return .freezer
-        case .dairy, .meat, .produce:  return .refrigerator
-        default:                       return .foodCloset
-        }
-    }
-
-    private func deleteItems(_ source: [ShoppingListItem], at offsets: IndexSet) {
-        offsets.map { source[$0] }.forEach { modelContext.delete($0) }
     }
 }
 

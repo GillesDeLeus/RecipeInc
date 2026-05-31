@@ -310,7 +310,7 @@ struct IngredientFormView: View {
         let trimmed = text.trimmingCharacters(in: .whitespaces)
             .replacingOccurrences(of: ",", with: ".")
         guard !trimmed.isEmpty, let val = Double(trimmed) else { return nil }
-        return val
+        return max(0, val)
     }
 
     // MARK: - Actions

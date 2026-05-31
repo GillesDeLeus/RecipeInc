@@ -2,6 +2,9 @@ import Foundation
 import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "RecipeApp", category: "DataExport")
 
 // MARK: - Codable transfer types
 
@@ -133,6 +136,7 @@ enum DataExportService {
     // MARK: Export
 
     static func export(from context: ModelContext) throws -> Data {
+        logger.info("Starting export")
         let ingredients  = try context.fetch(FetchDescriptor<Ingredient>())
         let categories   = try context.fetch(FetchDescriptor<RecipeCategory>())
         let tags         = try context.fetch(FetchDescriptor<RecipeTag>())
@@ -208,7 +212,9 @@ enum DataExportService {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         encoder.dateEncodingStrategy = .iso8601
-        return try encoder.encode(payload)
+        let data = try encoder.encode(payload)
+        logger.info("Export complete: \(recipes.count) recipes, \(ingredients.count) ingredients")
+        return data
     }
 
     // MARK: Import

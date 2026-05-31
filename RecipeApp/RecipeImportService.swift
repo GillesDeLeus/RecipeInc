@@ -1,6 +1,9 @@
 import Foundation
 import Vision
 import FoundationModels
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "RecipeApp", category: "RecipeImport")
 
 // MARK: - Plain data types (used by the view on all OS versions)
 
@@ -54,6 +57,7 @@ enum RecipeImportService {
         guard let url = URL(string: trimmed), url.scheme != nil else {
             throw RecipeImportError.invalidURL
         }
+        logger.info("Importing recipe from URL: \(url.host ?? urlString)")
         let html: String
         do {
             var req = URLRequest(url: url, timeoutInterval: 15)
@@ -61,11 +65,15 @@ enum RecipeImportService {
             let (data, _) = try await URLSession.shared.data(for: req)
             html = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .isoLatin1) ?? ""
         } catch {
+            logger.error("Network error fetching \(url.host ?? urlString): \(error.localizedDescription)")
             throw RecipeImportError.networkError(error)
         }
 
         // Try structured JSON-LD first (fast, no AI needed)
-        if let parsed = parseJSONLD(html) { return parsed }
+        if let parsed = parseJSONLD(html) {
+            logger.info("Recipe parsed via JSON-LD: \(parsed.name)")
+            return parsed
+        }
 
         // Fall back to LLM parsing on macOS 26+
         if #available(macOS 26.0, iOS 26.0, *) {

@@ -14,8 +14,14 @@ struct ContentView: View {
             RecipeListView()
                 .tabItem { Label(lang.tabRecipes, systemImage: "fork.knife") }
 
-            IngredientListView()
-                .tabItem { Label(lang.tabIngredients, systemImage: "carrot") }
+            // Calendar is a core daily-use feature and must stay in the first 5
+            // slots. With all three optional features on (Calendar + Shopping +
+            // Storage), Settings is the 6th tab and moves to "More". SettingsView
+            // owns its own NavigationStack, so it works correctly in the overflow.
+            if appSettings.featureCalendar {
+                CalendarView()
+                    .tabItem { Label(lang.tabCalendar, systemImage: "calendar") }
+            }
 
             if appSettings.featureShopping {
                 PersistentShoppingListView()
@@ -28,18 +34,11 @@ struct ContentView: View {
                     .tabItem { Label(lang.tabStorage, systemImage: "cart") }
             }
 
-            // Settings always appears before Calendar so it stays within the first 5
-            // tab slots and is never pushed into the "More" overflow (which would
-            // create a double navigation bar).
-            NavigationStack {
-                SettingsView()
-            }
-            .tabItem { Label(lang.tabSettings, systemImage: "gear") }
+            IngredientListView()
+                .tabItem { Label(lang.tabIngredients, systemImage: "carrot") }
 
-            if appSettings.featureCalendar {
-                CalendarView()
-                    .tabItem { Label(lang.tabCalendar, systemImage: "calendar") }
-            }
+            SettingsView()
+                .tabItem { Label(lang.tabSettings, systemImage: "gear") }
         }
         .onAppear(perform: seedDefaultData)
     }

@@ -2,10 +2,6 @@ import SwiftUI
 import SwiftData
 import TipKit
 
-enum IngredientSortOrder: String, CaseIterable {
-    case nameAsc, nameDesc, byCategory
-}
-
 struct IngredientListView: View {
 
     @Environment(\.modelContext) private var modelContext
@@ -15,51 +11,16 @@ struct IngredientListView: View {
 
     private let addIngredientTip = AddIngredientTip()
 
-    @State private var searchText = ""
-    @State private var showAddSheet = false
-    @State private var ingredientToEdit: Ingredient?
-    @State private var inUseAlert: InUseAlert?
-    @State private var sortOrder: IngredientSortOrder = .nameAsc
-    @State private var filterCategories: Set<ShoppingCategory> = []
-    @State private var showFilterSheet = false
-
-    private struct InUseAlert: Identifiable {
-        let id = UUID()
-        let title: String
-        let message: String
-    }
+    @State private var vm = IngredientListViewModel()
 
     private var lang: AppLanguage { appSettings.language }
 
-    private var isFiltering: Bool { !filterCategories.isEmpty }
-
-    private var filtered: [Ingredient] {
-        var result = ingredients.filter { ingredient in
-            if !searchText.isEmpty,
-               !ingredient.name.localizedCaseInsensitiveContains(searchText) { return false }
-            if !filterCategories.isEmpty,
-               !filterCategories.contains(ingredient.shoppingCategory) { return false }
-            return true
-        }
-        switch sortOrder {
-        case .nameAsc:
-            result.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        case .nameDesc:
-            result.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
-        case .byCategory:
-            result.sort {
-                let c = $0.shoppingCategory.rawValue.localizedCompare($1.shoppingCategory.rawValue)
-                return c == .orderedAscending ||
-                    (c == .orderedSame &&
-                     $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending)
-            }
-        }
-        return result
-    }
+    private var filtered: [Ingredient] { vm.filtered(ingredients: ingredients) }
 
     // MARK: - Body
 
     var body: some View {
+        @Bindable var vm = vm
         NavigationStack {
             VStack(spacing: 0) {
                 TipView(addIngredientTip)
@@ -74,17 +35,17 @@ struct IngredientListView: View {
                 }
             }
             .navigationTitle(lang.tabIngredients)
-            .searchable(text: $searchText, prompt: lang.searchIngredient)
+            .searchable(text: $vm.searchText, prompt: lang.searchIngredient)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Menu {
                         ForEach(IngredientSortOrder.allCases, id: \.self) { order in
                             Button {
-                                sortOrder = order
+                                vm.sortOrder = order
                             } label: {
                                 HStack {
                                     Text(sortLabel(for: order))
-                                    if sortOrder == order {
+                                    if vm.sortOrder == order {
                                         Spacer()
                                         Image(systemName: "checkmark")
                                     }
@@ -95,29 +56,29 @@ struct IngredientListView: View {
                         Label(lang.sortLabel, systemImage: "arrow.up.arrow.down")
                     }
 
-                    Button { showFilterSheet = true } label: {
-                        Label(lang.filterTitle, systemImage: isFiltering
+                    Button { vm.showFilterSheet = true } label: {
+                        Label(lang.filterTitle, systemImage: vm.isFiltering
                               ? "line.3.horizontal.decrease.circle.fill"
                               : "line.3.horizontal.decrease.circle")
                     }
 
-                    Button { showAddSheet = true } label: {
+                    Button { vm.showAddSheet = true } label: {
                         Label(lang.addItem, systemImage: "plus")
                     }
                 }
             }
-            .sheet(item: $ingredientToEdit) { ingredient in
+            .sheet(item: $vm.ingredientToEdit) { ingredient in
                 IngredientFormView(ingredient: ingredient)
             }
-            .alert(item: $inUseAlert) { alert in
+            .alert(item: $vm.inUseAlert) { alert in
                 Alert(title: Text(alert.title), message: Text(alert.message))
             }
         }
-        .sheet(isPresented: $showAddSheet) {
+        .sheet(isPresented: $vm.showAddSheet) {
             IngredientFormView()
         }
-        .sheet(isPresented: $showFilterSheet) {
-            IngredientFilterView(selectedCategories: $filterCategories)
+        .sheet(isPresented: $vm.showFilterSheet) {
+            IngredientFilterView(selectedCategories: $vm.filterCategories)
         }
     }
 
@@ -127,7 +88,7 @@ struct IngredientListView: View {
         List {
             ForEach(filtered) { ingredient in
                 Button {
-                    ingredientToEdit = ingredient
+                    vm.ingredientToEdit = ingredient
                 } label: {
                     HStack(spacing: 12) {
                         ZStack {
@@ -165,7 +126,7 @@ struct IngredientListView: View {
         } description: {
             Text(lang.addFirstIngredient)
         } actions: {
-            Button(lang.addIngredientBtn) { showAddSheet = true }
+            Button(lang.addIngredientBtn) { vm.showAddSheet = true }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -194,26 +155,10 @@ struct IngredientListView: View {
         }
     }
 
-    // MARK: - Actions
-
     private func delete(at offsets: IndexSet) {
         let toDelete = offsets.map { filtered[$0] }
         for ingredient in toDelete {
-            let recipeCount  = ingredient.recipeIngredients.count
-            let storageCount = allStorageItems.filter {
-                $0.ingredient?.persistentModelID == ingredient.persistentModelID
-            }.count
-
-            if recipeCount > 0 || storageCount > 0 {
-                inUseAlert = InUseAlert(
-                    title: lang.ingredientInUseTitle,
-                    message: lang.ingredientInUseMessage(ingredient.name,
-                                                         recipes: recipeCount,
-                                                         storage: storageCount)
-                )
-            } else {
-                modelContext.delete(ingredient)
-            }
+            vm.delete(ingredient: ingredient, storageItems: allStorageItems, in: modelContext, lang: lang)
         }
     }
 }

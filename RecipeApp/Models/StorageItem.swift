@@ -6,14 +6,6 @@ enum StorageLocation: String, Codable, CaseIterable {
     case refrigerator
     case foodCloset
 
-    var displayName: String {
-        switch self {
-        case .freezer:      return "Vriezer"
-        case .refrigerator: return "Koelkast"
-        case .foodCloset:   return "Voorraadkast"
-        }
-    }
-
     var icon: String {
         switch self {
         case .freezer:      return "snowflake"
