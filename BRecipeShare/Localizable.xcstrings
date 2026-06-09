@@ -4,10 +4,40 @@
     "Open recipeInc to review and import.": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne recipeInc zum Prüfen und Importieren."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre recipeInc para revisar e importar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrez recipeInc pour vérifier et importer."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri recipeInc per controllare e importare."
+          }
+        },
         "nl": {
           "stringUnit": {
             "state": "translated",
             "value": "Open recipeInc om het te bekijken en te importeren."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otwórz recipeInc, aby sprawdzić i zaimportować."
           }
         }
       }
@@ -15,10 +45,40 @@
     "Recipe saved!": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rezept gesichert!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Receta guardada!"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recette enregistrée !"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ricetta salvata!"
+          }
+        },
         "nl": {
           "stringUnit": {
             "state": "translated",
             "value": "Recept opgeslagen!"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przepis zapisany!"
           }
         }
       }
@@ -26,10 +86,40 @@
     "Saving recipe…": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rezept wird gesichert …"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardando la receta…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrement de la recette…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvataggio della ricetta…"
+          }
+        },
         "nl": {
           "stringUnit": {
             "state": "translated",
             "value": "Recept opslaan…"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zapisywanie przepisu…"
           }
         }
       }
