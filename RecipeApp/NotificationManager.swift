@@ -9,23 +9,39 @@ final class NotificationManager {
     static let shared = NotificationManager()
     private init() {}
 
-    func requestAuthorization() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            if let error {
-                logger.error("Notification authorization failed: \(error.localizedDescription)")
-            } else {
-                logger.info("Notification authorization granted: \(granted)")
-            }
-        }
-    }
-
     // Schedule 2-day and 1-day-before notifications, or cancel if no expiry date.
+    // Asks for notification permission the first time a user actually needs it
+    // (saving an item with an expiry date) instead of at app launch.
     func updateNotifications(for item: StorageItem) {
         cancelNotifications(for: item)
         guard let expiry = item.expiryDate else { return }
 
-        let center = UNUserNotificationCenter.current()
+        // Read model properties on the caller's actor; the completion below
+        // runs on a background queue where touching SwiftData models is unsafe.
         let ingredientName = item.ingredient?.name ?? "Item"
+        let token = item.notificationToken
+
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                    if let error {
+                        logger.error("Notification authorization failed: \(error.localizedDescription)")
+                    } else if granted {
+                        self.schedule(token: token, ingredientName: ingredientName, expiry: expiry)
+                    }
+                }
+            case .denied:
+                logger.info("Notifications denied; skipping scheduling for \(token)")
+            default:
+                self.schedule(token: token, ingredientName: ingredientName, expiry: expiry)
+            }
+        }
+    }
+
+    private func schedule(token: String, ingredientName: String, expiry: Date) {
+        let center = UNUserNotificationCenter.current()
         let lang = AppLanguage(rawValue: UserDefaults.standard.string(forKey: "appLanguage") ?? "en") ?? .english
 
         for daysOffset in [2, 1] {
@@ -44,7 +60,7 @@ final class NotificationManager {
             content.sound = .default
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-            let identifier = "\(item.notificationToken)-\(daysOffset)d"
+            let identifier = "\(token)-\(daysOffset)d"
             let request = UNNotificationRequest(
                 identifier: identifier,
                 content: content,

@@ -5,6 +5,26 @@ final class ShareState {
     var saved: Bool = false
 }
 
+/// Minimal en/nl strings for the extension, driven by the language the main
+/// app mirrors into the App Group defaults (key "appLanguage").
+private enum ShareStrings {
+    static var isDutch: Bool {
+        UserDefaults(suiteName: PendingImportStore.appGroupID)?
+            .string(forKey: "appLanguage") == "nl"
+    }
+
+    static var saving: String {
+        isDutch ? "Recept opslaan…" : "Saving recipe…"
+    }
+    static var saved: String {
+        isDutch ? "Recept opgeslagen!" : "Recipe saved!"
+    }
+    static var openApp: String {
+        isDutch ? "Open recipeInc om het te bekijken en te importeren."
+                : "Open recipeInc to review and import."
+    }
+}
+
 struct ShareView: View {
 
     var state: ShareState
@@ -29,9 +49,9 @@ struct ShareView: View {
                         .font(.system(size: 36))
                         .foregroundStyle(.green)
                         .transition(.scale.combined(with: .opacity))
-                    Text("Recipe saved!")
+                    Text(ShareStrings.saved)
                         .font(.headline)
-                    Text("Open BRecipe to review and import.")
+                    Text(ShareStrings.openApp)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -41,7 +61,7 @@ struct ShareView: View {
                 VStack(spacing: 8) {
                     ProgressView()
                         .controlSize(.regular)
-                    Text("Saving recipe…")
+                    Text(ShareStrings.saving)
                         .font(.headline)
                         .foregroundStyle(.secondary)
                 }

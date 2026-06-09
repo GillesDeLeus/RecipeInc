@@ -24,7 +24,12 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 @Observable
 final class AppSettings {
     var language: AppLanguage {
-        didSet { UserDefaults.standard.set(language.rawValue, forKey: "appLanguage") }
+        didSet {
+            UserDefaults.standard.set(language.rawValue, forKey: "appLanguage")
+            // Mirror to the app group so the share extension can localize its UI.
+            UserDefaults(suiteName: PendingImportStore.appGroupID)?
+                .set(language.rawValue, forKey: "appLanguage")
+        }
     }
     // Feature flags — default ON on first launch
     var featureStorage: Bool {
@@ -57,8 +62,18 @@ final class AppSettings {
     }
 
     init() {
-        let saved = UserDefaults.standard.string(forKey: "appLanguage") ?? "en"
-        self.language = AppLanguage(rawValue: saved) ?? .english
+        let initialLanguage: AppLanguage
+        if let saved = UserDefaults.standard.string(forKey: "appLanguage"),
+           let language = AppLanguage(rawValue: saved) {
+            initialLanguage = language
+        } else {
+            // First launch: follow the device language.
+            let preferred = Locale.preferredLanguages.first ?? "en"
+            initialLanguage = preferred.hasPrefix("nl") ? .dutch : .english
+        }
+        self.language = initialLanguage
+        UserDefaults(suiteName: PendingImportStore.appGroupID)?
+            .set(initialLanguage.rawValue, forKey: "appLanguage")
         // Use object(forKey:) so missing key → nil → default true (not false)
         self.featureStorage   = UserDefaults.standard.object(forKey: "featureStorage")   as? Bool ?? true
         self.featureCalendar  = UserDefaults.standard.object(forKey: "featureCalendar")  as? Bool ?? true
@@ -322,11 +337,21 @@ extension AppLanguage {
     var importedPreviewTitle: String { t("Recipe Preview", "Receptvoorbeeld") }
     var noAIHint: String             { t("Structured data not found. AI parsing requires macOS 26 or later.", "Gestructureerde data niet gevonden. AI-verwerking vereist macOS 26 of hoger.") }
     var aiRequiresiOS26: String      { t("Photo analysis requires iOS 26 or later. Update your device to use this feature.", "Fotoanalyse vereist iOS 26 of hoger. Update je toestel om deze functie te gebruiken.") }
+    var generateRecipe: String       { t("Generate", "Genereren") }
+    var dishNamePlaceholder: String  { t("Enter dish name…", "Gerechtnaam invoeren…") }
+    var generatingRecipe: String     { t("Generating recipe…", "Recept genereren…") }
 
     // Privacy policy
     var privacyPolicyTitle: String         { t("Privacy Policy", "Privacybeleid") }
     var privacyPolicyEffectiveDate: String { t("Effective date: May 2026", "Ingangsdatum: mei 2026") }
     var privacyPolicy: String              { t("Privacy Policy", "Privacybeleid") }
+
+    // Data source attribution
+    var dataSourcesTitle: String { t("Data Sources", "Gegevensbronnen") }
+    var dataSourcesText: String  {
+        t("Nutritional values are based on NEVO (RIVM, the Netherlands). Barcode product data is provided by Open Food Facts and available under the Open Database License (ODbL).",
+          "Voedingswaarden zijn gebaseerd op NEVO (RIVM, Nederland). Productgegevens via barcode komen van Open Food Facts en zijn beschikbaar onder de Open Database License (ODbL).")
+    }
 
     // Data export / import
     var dataLabel: String          { t("Data", "Gegevens") }

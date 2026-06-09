@@ -102,6 +102,10 @@ struct SettingsView: View {
                                 .font(.footnote.weight(.semibold))
                         }
                     }
+                } footer: {
+                    // ODbL (Open Food Facts) requires attribution; NEVO/RIVM requests it.
+                    Text("\(lang.dataSourcesTitle): \(lang.dataSourcesText)")
+                        .font(.footnote)
                 }
 
                 // ── Notifications ────────────────────────────────
@@ -232,41 +236,53 @@ struct SettingsView: View {
     // MARK: - Actions
 
     private func exportData(lang: AppLanguage) {
-        do {
-            let data = try DataExportService.export(from: modelContext)
-            exportFile = JSONFile(data: data)
-            showExporter = true
-        } catch {
-            importAlert = ImportAlertState(
-                title: lang.exportFailedTitle,
-                message: error.localizedDescription
-            )
+        let container = modelContext.container
+        Task {
+            do {
+                // Fetching and base64-encoding photos can be heavy with large
+                // libraries — run it on a background context off the main thread.
+                let data = try await Task.detached(priority: .userInitiated) {
+                    let backgroundContext = ModelContext(container)
+                    return try DataExportService.export(from: backgroundContext)
+                }.value
+                exportFile = JSONFile(data: data)
+                showExporter = true
+            } catch {
+                importAlert = ImportAlertState(
+                    title: lang.exportFailedTitle,
+                    message: error.localizedDescription
+                )
+            }
         }
     }
 
     private func handleImport(result: Result<URL, Error>, lang: AppLanguage) {
-        do {
-            let url = try result.get()
-            guard url.startAccessingSecurityScopedResource() else { return }
-            defer { url.stopAccessingSecurityScopedResource() }
-
-            let data = try Data(contentsOf: url)
-            let outcome = try DataExportService.import(from: data, into: modelContext)
-
-            if outcome.conflicts.isEmpty {
+        Task {
+            do {
+                let url = try result.get()
+                guard url.startAccessingSecurityScopedResource() else { return }
+                // Read file bytes off the main thread to avoid blocking the UI.
+                let data = try await Task.detached(priority: .userInitiated) {
+                    defer { url.stopAccessingSecurityScopedResource() }
+                    return try Data(contentsOf: url)
+                }.value
+                // ModelContext mutations must stay on the main actor.
+                let outcome = try DataExportService.import(from: data, into: modelContext)
+                if outcome.conflicts.isEmpty {
+                    importAlert = ImportAlertState(
+                        title: lang.importSuccessTitle,
+                        message: outcome.result.summary(in: lang)
+                    )
+                } else {
+                    pendingConflicts = outcome.conflicts
+                    showConflictSheet = true
+                }
+            } catch {
                 importAlert = ImportAlertState(
-                    title: lang.importSuccessTitle,
-                    message: outcome.result.summary(in: lang)
+                    title: lang.importFailedTitle,
+                    message: error.localizedDescription
                 )
-            } else {
-                pendingConflicts = outcome.conflicts
-                showConflictSheet = true
             }
-        } catch {
-            importAlert = ImportAlertState(
-                title: lang.importFailedTitle,
-                message: error.localizedDescription
-            )
         }
     }
 }

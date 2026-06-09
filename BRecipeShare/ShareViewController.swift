@@ -31,40 +31,118 @@ final class ShareViewController: UIViewController {
             complete(); return
         }
 
+        var foundURL: String? = nil
+        var foundText: String? = nil
+        var foundImageData: Data? = nil
+
+        // The item-level attributedContentText often carries the post caption
+        // (Instagram, TikTok, Threads all populate this when sharing a post)
+        for item in items {
+            if let caption = item.attributedContentText?.string {
+                let trimmed = caption.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty { foundText = trimmed }
+            }
+        }
+
+        // Use a DispatchGroup to collect all async provider loads
+        let group = DispatchGroup()
+
         for item in items {
             for provider in item.attachments ?? [] {
-                // 1. Prefer a proper URL (Instagram, TikTok, YouTube, Safari all share URLs)
-                if provider.hasItemConformingToTypeIdentifier("public.url") {
-                    provider.loadItem(forTypeIdentifier: "public.url", options: nil) { [weak self] data, _ in
-                        let urlString: String?
-                        if let url = data as? URL { urlString = url.absoluteString }
-                        else if let str = data as? String, !str.isEmpty { urlString = str }
-                        else { urlString = nil }
+                // URL attachment
+                if provider.hasItemConformingToTypeIdentifier("public.url"), foundURL == nil {
+                    group.enter()
+                    provider.loadItem(forTypeIdentifier: "public.url", options: nil) { data, _ in
+                        // loadItem completions run on arbitrary queues; hop to main
+                        // so foundURL/foundText are only ever mutated from one queue.
                         DispatchQueue.main.async {
-                            if let str = urlString {
-                                PendingImportStore.save(PendingImport(kind: .url, content: str))
-                            }
-                            self?.markSavedAndDismiss()
+                            defer { group.leave() }
+                            if let url = data as? URL { foundURL = url.absoluteString }
+                            else if let str = data as? String, !str.isEmpty { foundURL = str }
                         }
                     }
-                    return
                 }
-                // 2. Fall back to plain text (copied recipe text, or a URL in text form)
-                if provider.hasItemConformingToTypeIdentifier("public.plain-text") {
-                    provider.loadItem(forTypeIdentifier: "public.plain-text", options: nil) { [weak self] data, _ in
+                // Image attachment (recipe screenshots; OCR'd in the main app)
+                if provider.hasItemConformingToTypeIdentifier("public.image"), foundImageData == nil {
+                    group.enter()
+                    provider.loadItem(forTypeIdentifier: "public.image", options: nil) { data, _ in
                         DispatchQueue.main.async {
-                            if let text = data as? String, !text.isEmpty {
-                                let isURL = text.hasPrefix("http://") || text.hasPrefix("https://")
-                                PendingImportStore.save(PendingImport(kind: isURL ? .url : .text, content: text))
+                            defer { group.leave() }
+                            guard foundImageData == nil else { return }
+                            switch data {
+                            case let fileURL as URL:
+                                foundImageData = try? Data(contentsOf: fileURL)
+                            case let image as UIImage:
+                                foundImageData = image.jpegData(compressionQuality: 0.9)
+                            case let raw as Data:
+                                foundImageData = raw
+                            default:
+                                break
                             }
-                            self?.markSavedAndDismiss()
                         }
                     }
-                    return
+                }
+                // Plain text attachment (some apps embed the caption here too)
+                if provider.hasItemConformingToTypeIdentifier("public.plain-text"), foundText == nil {
+                    group.enter()
+                    provider.loadItem(forTypeIdentifier: "public.plain-text", options: nil) { data, _ in
+                        DispatchQueue.main.async {
+                            defer { group.leave() }
+                            if let str = data as? String {
+                                let trimmed = str.trimmingCharacters(in: .whitespacesAndNewlines)
+                                guard !trimmed.isEmpty else { return }
+                                // If it looks like a URL, treat it as one
+                                if trimmed.hasPrefix("http://") || trimmed.hasPrefix("https://") {
+                                    if foundURL == nil { foundURL = trimmed }
+                                } else {
+                                    foundText = trimmed
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
-        complete()
+
+        group.notify(queue: .main) { [weak self] in
+            guard let self else { return }
+            if let url = foundURL {
+                // Social media URL + caption text → send the text so AI can parse the recipe
+                if let text = foundText, !text.isEmpty, self.isSocialMedia(urlString: url) {
+                    PendingImportStore.save(PendingImport(kind: .text, content: text))
+                } else {
+                    // Normal URL (recipe site) or social URL without caption → send URL
+                    PendingImportStore.save(PendingImport(kind: .url, content: url))
+                }
+                self.markSavedAndDismiss()
+            } else if let text = foundText {
+                PendingImportStore.save(PendingImport(kind: .text, content: text))
+                self.markSavedAndDismiss()
+            } else if let imageData = foundImageData {
+                PendingImportStore.saveImage(imageData)
+                self.markSavedAndDismiss()
+            } else {
+                // Nothing usable was shared — don't claim success.
+                self.complete()
+            }
+        }
+    }
+
+    // MARK: - Helpers
+
+    private static let socialHosts: Set<String> = [
+        "instagram.com", "www.instagram.com",
+        "tiktok.com", "www.tiktok.com", "vm.tiktok.com",
+        "twitter.com", "www.twitter.com", "x.com", "www.x.com",
+        "facebook.com", "www.facebook.com", "m.facebook.com",
+        "threads.net", "www.threads.net",
+        "snapchat.com", "www.snapchat.com",
+        "youtube.com", "www.youtube.com", "youtu.be", "m.youtube.com",
+    ]
+
+    private func isSocialMedia(urlString: String) -> Bool {
+        guard let host = URL(string: urlString)?.host?.lowercased() else { return false }
+        return Self.socialHosts.contains(host)
     }
 
     private func markSavedAndDismiss() {

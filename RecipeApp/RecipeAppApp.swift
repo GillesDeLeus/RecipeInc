@@ -17,7 +17,6 @@ struct RecipeAppApp: App {
         WindowGroup {
             ContentView()
                 .environment(appSettings)
-                .task { NotificationManager.shared.requestAuthorization() }
         }
         .modelContainer(for: [
             Recipe.self,

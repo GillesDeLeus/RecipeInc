@@ -18,19 +18,22 @@ struct RecipeImportView: View {
     // Pre-populated values from Share Extension
     private let prefilledURL: String?
     private let prefilledText: String?
+    private let prefilledImageData: Data?
 
-    init(prefilledURL: String? = nil, prefilledText: String? = nil) {
+    init(prefilledURL: String? = nil, prefilledText: String? = nil, prefilledImageData: Data? = nil) {
         self.prefilledURL = prefilledURL
         self.prefilledText = prefilledText
+        self.prefilledImageData = prefilledImageData
     }
 
     // MARK: - State
 
-    enum ImportMode: String, CaseIterable { case url, photo, text }
+    enum ImportMode: String, CaseIterable { case url, photo, text, generate }
 
     @State private var mode: ImportMode = .url
     @State private var urlText = ""
     @State private var pastedText = ""
+    @State private var dishNameText = ""
     @State private var selectedImage: CGImage?
     @State private var didPrefill = false
 
@@ -45,7 +48,7 @@ struct RecipeImportView: View {
         case idle
         case loading(String)
         case success(ImportedRecipeData)
-        case failure(String)
+        case failure(String, isSocialMedia: Bool = false)
     }
     @State private var loadState: LoadState = .idle
 
@@ -67,6 +70,7 @@ struct RecipeImportView: View {
                         Text(lang.importFromURL).tag(ImportMode.url)
                         Text(lang.importFromPhoto).tag(ImportMode.photo)
                         Text(lang.importFromText).tag(ImportMode.text)
+                        Text(lang.generateRecipe).tag(ImportMode.generate)
                     }
                     .pickerStyle(.segmented)
                     .onChange(of: mode) { _, _ in loadState = .idle }
@@ -86,9 +90,10 @@ struct RecipeImportView: View {
 
                 // ── Input ─────────────────────────────────────────
                 switch mode {
-                case .url:   urlInputSection
-                case .photo: photoInputSection
-                case .text:  textInputSection
+                case .url:      urlInputSection
+                case .photo:    photoInputSection
+                case .text:     textInputSection
+                case .generate: generateRecipeSection
                 }
 
                 // ── Result ────────────────────────────────────────
@@ -102,11 +107,19 @@ struct RecipeImportView: View {
                             Text(msg).foregroundStyle(.secondary)
                         }
                     }
-                case .failure(let msg):
+                case .failure(let msg, let isSocialMedia):
                     Section {
                         Label(msg, systemImage: "exclamationmark.triangle")
                             .foregroundStyle(.red)
                             .fixedSize(horizontal: false, vertical: true)
+                        if isSocialMedia {
+                            Button {
+                                mode = .text
+                                loadState = .idle
+                            } label: {
+                                Label(lang.importFromText, systemImage: "doc.on.clipboard")
+                            }
+                        }
                     }
                 case .success:
                     previewSection
@@ -166,6 +179,14 @@ struct RecipeImportView: View {
         } else if let text = prefilledText, !text.isEmpty {
             mode = .text
             pastedText = text
+            Task { await analyzeText() }
+        } else if let data = prefilledImageData,
+                  let src = CGImageSourceCreateWithData(data as CFData, nil),
+                  let raw = CGImageSourceCreateImageAtIndex(src, 0, nil),
+                  let img = normalizeImage(raw) {
+            mode = .photo
+            selectedImage = img
+            Task { await analyzeImage(img) }
         }
     }
 
@@ -255,6 +276,25 @@ struct RecipeImportView: View {
                     Task { await analyzeText() }
                 }
                 .disabled(pastedText.trimmingCharacters(in: .whitespaces).isEmpty)
+            } else {
+                Text(lang.aiRequiresiOS26)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    // MARK: - Generate Recipe Section
+
+    private var generateRecipeSection: some View {
+        Section(lang.generateRecipe) {
+            TextField(lang.dishNamePlaceholder, text: $dishNameText)
+                .autocorrectionDisabled()
+            if #available(iOS 26, macOS 26, *) {
+                Button(lang.generateRecipe) {
+                    Task { await generateRecipe() }
+                }
+                .disabled(dishNameText.trimmingCharacters(in: .whitespaces).isEmpty)
             } else {
                 Text(lang.aiRequiresiOS26)
                     .font(.caption)
@@ -357,6 +397,8 @@ struct RecipeImportView: View {
             let parsed = try await RecipeImportService.importFromURL(urlText)
             loadState = .success(parsed)
             populate(from: parsed)
+        } catch let e as RecipeImportError {
+            loadState = .failure(e.localizedDescription, isSocialMedia: e.isSocialMedia)
         } catch {
             loadState = .failure(error.localizedDescription)
         }
@@ -366,6 +408,19 @@ struct RecipeImportView: View {
         loadState = .loading(lang.analyzingRecipe)
         do {
             let parsed = try await RecipeImportService.importFromText(pastedText)
+            loadState = .success(parsed)
+            populate(from: parsed)
+        } catch {
+            loadState = .failure(error.localizedDescription)
+        }
+    }
+
+    private func generateRecipe() async {
+        let dish = dishNameText.trimmingCharacters(in: .whitespaces)
+        guard !dish.isEmpty else { return }
+        loadState = .loading(lang.generatingRecipe)
+        do {
+            let parsed = try await RecipeImportService.generateRecipeFromDish(dish)
             loadState = .success(parsed)
             populate(from: parsed)
         } catch {

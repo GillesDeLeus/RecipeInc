@@ -42,20 +42,4 @@ final class Recipe {
         self.createdAt = Date()
         self.updatedAt = Date()
     }
-
-    // MARK: - Computed helpers
-
-    /// Formatted prep time, e.g. "1 u 30 min" or "45 min".
-    var formattedPrepTime: String {
-        guard prepTimeMinutes > 0 else { return "–" }
-        let hours = prepTimeMinutes / 60
-        let minutes = prepTimeMinutes % 60
-        if hours > 0 && minutes > 0 {
-            return "\(hours) u \(minutes) min"
-        } else if hours > 0 {
-            return "\(hours) u"
-        } else {
-            return "\(minutes) min"
-        }
-    }
 }

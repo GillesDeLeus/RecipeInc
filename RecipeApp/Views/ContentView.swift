@@ -10,6 +10,7 @@ struct ContentView: View {
     private var uncheckedShoppingItems: [ShoppingListItem]
 
     @State private var pendingImport: PendingImport?
+    @State private var pendingImportImageData: Data?
 
     var body: some View {
         let lang = appSettings.language
@@ -46,6 +47,12 @@ struct ContentView: View {
         .onAppear(perform: seedDefaultData)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active, let item = PendingImportStore.loadAndClear() {
+                if item.kind == .image {
+                    // Load (and delete) the image file once, outside the sheet
+                    // builder — sheet content closures can be re-evaluated.
+                    guard let data = PendingImportStore.loadAndClearImageData() else { return }
+                    pendingImportImageData = data
+                }
                 pendingImport = item
             }
         }
@@ -57,6 +64,9 @@ struct ContentView: View {
             case .text:
                 RecipeImportView(prefilledText: item.content)
                     .environment(appSettings)
+            case .image:
+                RecipeImportView(prefilledImageData: pendingImportImageData)
+                    .environment(appSettings)
             }
         }
     }
@@ -67,25 +77,34 @@ struct ContentView: View {
         let categoryCount = (try? modelContext.fetchCount(FetchDescriptor<RecipeCategory>())) ?? 0
         guard categoryCount == 0 else { return }
 
+        let lang = appSettings.language
         let categories = [
-            "Breakfast", "Lunch", "Dinner", "Dessert",
-            "Snack", "Soup", "Salad", "Appetizer", "Side Dish", "Drink"
+            lang.t("Breakfast", "Ontbijt"),
+            lang.t("Lunch", "Lunch"),
+            lang.t("Dinner", "Avondeten"),
+            lang.t("Dessert", "Dessert"),
+            lang.t("Snack", "Snack"),
+            lang.t("Soup", "Soep"),
+            lang.t("Salad", "Salade"),
+            lang.t("Appetizer", "Voorgerecht"),
+            lang.t("Side Dish", "Bijgerecht"),
+            lang.t("Drink", "Drank")
         ]
         for name in categories {
             modelContext.insert(RecipeCategory(name: name, isCustom: false))
         }
 
         let tags: [(String, String)] = [
-            ("Quick",        "#34C759"),
-            ("Vegetarian",   "#30B050"),
-            ("Vegan",        "#00C7BE"),
-            ("Gluten-free",  "#FF9500"),
-            ("Dairy-free",   "#32ADE6"),
-            ("Spicy",        "#FF3B30"),
-            ("Kid-friendly", "#FFD60A"),
-            ("Healthy",      "#5AC8FA"),
-            ("One-pot",      "#BF5AF2"),
-            ("Make-ahead",   "#5E5CE6"),
+            (lang.t("Quick",        "Snel"),             "#34C759"),
+            (lang.t("Vegetarian",   "Vegetarisch"),      "#30B050"),
+            (lang.t("Vegan",        "Veganistisch"),     "#00C7BE"),
+            (lang.t("Gluten-free",  "Glutenvrij"),       "#FF9500"),
+            (lang.t("Dairy-free",   "Lactosevrij"),      "#32ADE6"),
+            (lang.t("Spicy",        "Pittig"),           "#FF3B30"),
+            (lang.t("Kid-friendly", "Kindvriendelijk"),  "#FFD60A"),
+            (lang.t("Healthy",      "Gezond"),           "#5AC8FA"),
+            (lang.t("One-pot",      "Eenpansgerecht"),   "#BF5AF2"),
+            (lang.t("Make-ahead",   "Voor te bereiden"), "#5E5CE6"),
         ]
         for (name, color) in tags {
             modelContext.insert(RecipeTag(name: name, colorHex: color, isCustom: false))

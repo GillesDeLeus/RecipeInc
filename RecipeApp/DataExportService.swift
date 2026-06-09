@@ -4,11 +4,11 @@ import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
 
-private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "RecipeApp", category: "DataExport")
+nonisolated private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "RecipeApp", category: "DataExport")
 
 // MARK: - Codable transfer types
 
-private struct AppExportData: Codable {
+nonisolated private struct AppExportData: Codable {
     let version: Int
     let exportDate: Date
     let ingredients: [IngredientRecord]
@@ -19,7 +19,7 @@ private struct AppExportData: Codable {
     let mealPlans: [MealPlanRecord]
 }
 
-private struct IngredientRecord: Codable {
+nonisolated private struct IngredientRecord: Codable {
     let name: String
     let unit: String
     let shoppingCategory: String
@@ -30,23 +30,23 @@ private struct IngredientRecord: Codable {
     let fiberPer100g:    Double?
 }
 
-private struct CategoryRecord: Codable {
+nonisolated private struct CategoryRecord: Codable {
     let name: String
     let isCustom: Bool
 }
 
-private struct TagRecord: Codable {
+nonisolated private struct TagRecord: Codable {
     let name: String
     let colorHex: String
     let isCustom: Bool
 }
 
-private struct RecipeIngredientRecord: Codable {
+nonisolated private struct RecipeIngredientRecord: Codable {
     let ingredientName: String
     let amount: Double
 }
 
-private struct RecipeRecord: Codable {
+nonisolated private struct RecipeRecord: Codable {
     let name: String
     let prepTimeMinutes: Int
     let instructions: String
@@ -57,14 +57,14 @@ private struct RecipeRecord: Codable {
     let photos: [String]
 }
 
-private struct StorageItemRecord: Codable {
+nonisolated private struct StorageItemRecord: Codable {
     let ingredientName: String
     let amount: Double
     let location: String
     let expiryDate: Date?
 }
 
-private struct MealPlanRecord: Codable {
+nonisolated private struct MealPlanRecord: Codable {
     let date: Date
     let mealType: String
     let recipeName: String?
@@ -135,7 +135,8 @@ enum DataExportService {
 
     // MARK: Export
 
-    static func export(from context: ModelContext) throws -> Data {
+    /// Safe to run on a background ModelContext; operates only on the context it is given.
+    nonisolated static func export(from context: ModelContext) throws -> Data {
         logger.info("Starting export")
         let ingredients  = try context.fetch(FetchDescriptor<Ingredient>())
         let categories   = try context.fetch(FetchDescriptor<RecipeCategory>())
