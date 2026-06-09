@@ -54,7 +54,6 @@ struct CalendarView: View {
     @State private var isSelectingDates = false
     @State private var selectedDates: Set<Date> = []
 
-    private var lang: AppLanguage { appSettings.language }
     private var cal: Calendar { Calendar.current }
 
     var body: some View {
@@ -62,9 +61,9 @@ struct CalendarView: View {
             VStack(spacing: 0) {
                 // ── View mode picker ──────────────────────────────
                 Picker("", selection: $viewMode) {
-                    Text(lang.monthView).tag(CalendarViewMode.month)
-                    Text(lang.weekView).tag(CalendarViewMode.week)
-                    Text(lang.dayView).tag(CalendarViewMode.day)
+                    Text(String(localized: "Month")).tag(CalendarViewMode.month)
+                    Text(String(localized: "Week")).tag(CalendarViewMode.week)
+                    Text(String(localized: "Day")).tag(CalendarViewMode.day)
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal)
@@ -91,8 +90,8 @@ struct CalendarView: View {
 
                 if isSelectingDates {
                     Text(selectedDates.isEmpty
-                         ? lang.selectDates
-                         : lang.datesSelectedCount(selectedDates.count))
+                         ? String(localized: "Select Dates")
+                         : String(localized: "\(selectedDates.count) dates selected"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding(.bottom, 6)
@@ -147,7 +146,7 @@ struct CalendarView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .navigationTitle(lang.calendarTab)
+            .navigationTitle(String(localized: "Calendar"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
@@ -156,29 +155,29 @@ struct CalendarView: View {
                             Button {
                                 activeSheet = .shoppingList
                             } label: {
-                                Label(lang.shoppingList, systemImage: "cart")
+                                Label(String(localized: "Shopping List"), systemImage: "cart")
                             }
                         }
-                        Button(lang.cancel) {
+                        Button(String(localized: "Cancel")) {
                             isSelectingDates = false
                             selectedDates = []
                         }
                     } else {
                         if !cal.isDateInToday(displayDate) {
-                            Button(lang.todayButton) {
+                            Button(String(localized: "Today")) {
                                 displayDate = cal.startOfDay(for: Date())
                             }
                         }
                         Button {
                             isSelectingDates = true
                         } label: {
-                            Label(lang.selectDates, systemImage: "checkmark.circle")
+                            Label(String(localized: "Select Dates"), systemImage: "checkmark.circle")
                         }
                         Button {
                             activeSheet = .addMeal(displayDate)
                             addMealPlanTip.invalidate(reason: .actionPerformed)
                         } label: {
-                            Label(lang.addMeal, systemImage: "plus")
+                            Label(String(localized: "Add Meal"), systemImage: "plus")
                         }
                     }
                 }
@@ -407,7 +406,6 @@ private struct WeekListView: View {
     let onDelete: (MealPlan) -> Void
 
     @Environment(AppSettings.self) private var appSettings
-    private var lang: AppLanguage { appSettings.language }
     private let cal = Calendar.current
 
     var body: some View {
@@ -432,7 +430,7 @@ private struct WeekListView: View {
 
                 Section {
                     if dayMeals.isEmpty {
-                        Text(lang.noMealsPlanned)
+                        Text(String(localized: "No meals planned"))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     } else {
@@ -442,7 +440,7 @@ private struct WeekListView: View {
                                 .onTapGesture { onEdit(meal) }
                                 .swipeActions(edge: .trailing) {
                                     Button(role: .destructive) { onDelete(meal) } label: {
-                                        Label(lang.delete, systemImage: "trash")
+                                        Label(String(localized: "Delete"), systemImage: "trash")
                                     }
                                 }
                         }
@@ -498,13 +496,12 @@ private struct WeekListView: View {
                     NutritionSummaryCard(
                         nutrition: weekNutrition,
                         averageNutrition: NutritionCalculator.average(weekNutrition, days: 7),
-                        lang: lang,
                         showAverage: true
                     )
                     .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
                     .listRowBackground(Color.clear)
                 } header: {
-                    Text(lang.nutritionWeeklyTotal)
+                    Text(String(localized: "This Week"))
                 }
             }
         }
@@ -528,7 +525,6 @@ private struct DayDetailView: View {
     let onDelete: (MealPlan) -> Void
 
     @Environment(AppSettings.self) private var appSettings
-    private var lang: AppLanguage { appSettings.language }
     private let cal = Calendar.current
 
     private var dayMeals: [MealPlan] {
@@ -540,12 +536,12 @@ private struct DayDetailView: View {
     var body: some View {
         if dayMeals.isEmpty {
             ContentUnavailableView {
-                Label(lang.noMealsPlanned, systemImage: "fork.knife")
+                Label(String(localized: "No meals planned"), systemImage: "fork.knife")
             } description: {
-                Text(lang.addMealHint)
+                Text(String(localized: "Tap + to add a meal."))
             } actions: {
                 Button(action: onAdd) {
-                    Label(lang.addMeal, systemImage: "plus")
+                    Label(String(localized: "Add Meal"), systemImage: "plus")
                 }
                 .buttonStyle(.borderedProminent)
             }
@@ -559,13 +555,12 @@ private struct DayDetailView: View {
                         NutritionSummaryCard(
                             nutrition: nutrition,
                             averageNutrition: nil,
-                            lang: lang,
                             showAverage: false
                         )
                         .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
                         .listRowBackground(Color.clear)
                     } header: {
-                        Text(lang.nutritionDailyTotal)
+                        Text(String(localized: "Nutrition Today"))
                     }
                 }
 
@@ -580,12 +575,12 @@ private struct DayDetailView: View {
                                     .onTapGesture { onEdit(meal) }
                                     .swipeActions(edge: .trailing) {
                                         Button(role: .destructive) { onDelete(meal) } label: {
-                                            Label(lang.delete, systemImage: "trash")
+                                            Label(String(localized: "Delete"), systemImage: "trash")
                                         }
                                     }
                             }
                         } header: {
-                            Label(mealType.localizedName(in: lang), systemImage: mealType.icon)
+                            Label(mealType.localizedName, systemImage: mealType.icon)
                         }
                     }
                 }
@@ -593,7 +588,7 @@ private struct DayDetailView: View {
                 // Prominent "Add Meal" row at the bottom
                 Section {
                     Button(action: onAdd) {
-                        Label(lang.addMeal, systemImage: "plus.circle.fill")
+                        Label(String(localized: "Add Meal"), systemImage: "plus.circle.fill")
                             .foregroundStyle(Color.accentColor)
                     }
                 }
@@ -609,13 +604,12 @@ private struct MealEntryRow: View {
     @Environment(AppSettings.self) private var appSettings
     let meal: MealPlan
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(meal.displayName).font(.body)
             HStack(spacing: 12) {
-                let portionLabel = meal.portions == 1 ? lang.portionSingular : lang.portionPlural
+                let portionLabel = meal.portions == 1 ? String(localized: "portion") : String(localized: "portions")
                 Label("\(meal.portions) \(portionLabel)", systemImage: "person.2")
                 if !meal.notes.isEmpty {
                     Label(meal.notes, systemImage: "note.text").lineLimit(1)
@@ -633,7 +627,6 @@ private struct MealEntryRow: View {
 private struct NutritionSummaryCard: View {
     let nutrition: PeriodNutrition
     let averageNutrition: PeriodNutrition?   // nil for day view
-    let lang: AppLanguage
     let showAverage: Bool
 
     var body: some View {
@@ -651,7 +644,7 @@ private struct NutritionSummaryCard: View {
                     VStack(alignment: .trailing, spacing: 0) {
                         Text("\(Int(avg.calories.rounded())) kcal")
                             .font(.subheadline).fontWeight(.semibold).foregroundStyle(.orange.opacity(0.7))
-                        Text(lang.nutritionAvgPerDay)
+                        Text(String(localized: "avg/day"))
                             .font(.caption2).foregroundStyle(.secondary)
                     }
                 }
@@ -662,15 +655,15 @@ private struct NutritionSummaryCard: View {
 
             // ── Macro breakdown ───────────────────────────────
             HStack(spacing: 0) {
-                macroCell(lang.nutritionProtein, value: nutrition.protein, color: .blue)
-                macroCell(lang.nutritionFat,     value: nutrition.fat,     color: .yellow)
-                macroCell(lang.nutritionCarbs,   value: nutrition.carbs,   color: .green)
-                macroCell(lang.nutritionFiber,   value: nutrition.fiber,   color: .brown)
+                macroCell(String(localized: "Protein"), value: nutrition.protein, color: .blue)
+                macroCell(String(localized: "Fat"),     value: nutrition.fat,     color: .yellow)
+                macroCell(String(localized: "Carbs"),   value: nutrition.carbs,   color: .green)
+                macroCell(String(localized: "Fiber"),   value: nutrition.fiber,   color: .brown)
             }
 
             // ── Partial-data note ─────────────────────────────
             if nutrition.mealsWithData < nutrition.totalMeals {
-                Text(lang.nutritionMealsTracked(nutrition.mealsWithData, nutrition.totalMeals))
+                Text(String(localized: "Based on \(nutrition.mealsWithData) of \(nutrition.totalMeals) meals"))
                     .font(.caption2).foregroundStyle(.secondary)
             }
         }

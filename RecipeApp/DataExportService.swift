@@ -112,15 +112,15 @@ struct ImportResult {
     let storageItemsAdded: Int
     let mealPlansAdded: Int
 
-    func summary(in lang: AppLanguage) -> String {
+    func summary() -> String {
         var parts: [String] = []
-        if recipesAdded > 0      { parts.append(lang.importedRecipes(recipesAdded)) }
-        if ingredientsAdded > 0  { parts.append(lang.importedIngredients(ingredientsAdded)) }
-        if storageItemsAdded > 0 { parts.append(lang.importedStorageItems(storageItemsAdded)) }
-        if mealPlansAdded > 0    { parts.append(lang.importedMeals(mealPlansAdded)) }
-        if categoriesAdded > 0   { parts.append(lang.importedCategories(categoriesAdded)) }
-        if tagsAdded > 0         { parts.append(lang.importedTags(tagsAdded)) }
-        return parts.isEmpty ? lang.nothingImported : parts.joined(separator: "\n")
+        if recipesAdded > 0      { parts.append(String(localized: "\(recipesAdded) recipes")) }
+        if ingredientsAdded > 0  { parts.append(String(localized: "\(ingredientsAdded) ingredients")) }
+        if storageItemsAdded > 0 { parts.append(String(localized: "\(storageItemsAdded) storage items")) }
+        if mealPlansAdded > 0    { parts.append(String(localized: "\(mealPlansAdded) meals")) }
+        if categoriesAdded > 0   { parts.append(String(localized: "\(categoriesAdded) categories")) }
+        if tagsAdded > 0         { parts.append(String(localized: "\(tagsAdded) tags")) }
+        return parts.isEmpty ? String(localized: "Nothing new to import.") : parts.joined(separator: "\n")
     }
 }
 

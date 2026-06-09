@@ -12,7 +12,6 @@ struct StorageListView: View {
 
     @State private var vm = StorageListViewModel()
 
-    private var lang: AppLanguage { appSettings.language }
 
     private var filtered: [StorageItem] { vm.filtered(items: items) }
 
@@ -30,9 +29,9 @@ struct StorageListView: View {
                         emptyState
                     } else if filtered.isEmpty {
                         ContentUnavailableView {
-                            Label(lang.filterTitle, systemImage: "line.3.horizontal.decrease.circle")
+                            Label(String(localized: "Filter"), systemImage: "line.3.horizontal.decrease.circle")
                         } description: {
-                            Text(lang.noShoppingItemsHint)
+                            Text(String(localized: "No recipe ingredients for the selected meals."))
                         }
                     } else if vm.sortOrder == .byLocation && !vm.isFiltering && vm.searchText.isEmpty {
                         groupedList
@@ -41,8 +40,8 @@ struct StorageListView: View {
                     }
                 }
             }
-            .navigationTitle(lang.tabStorage)
-            .searchable(text: $vm.searchText, prompt: lang.searchStorage)
+            .navigationTitle(String(localized: "Storage"))
+            .searchable(text: $vm.searchText, prompt: String(localized: "Search storage…"))
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Menu {
@@ -60,17 +59,17 @@ struct StorageListView: View {
                             }
                         }
                     } label: {
-                        Label(lang.sortLabel, systemImage: "arrow.up.arrow.down")
+                        Label(String(localized: "Sort"), systemImage: "arrow.up.arrow.down")
                     }
 
                     Button { vm.showFilterSheet = true } label: {
-                        Label(lang.filterTitle, systemImage: vm.isFiltering
+                        Label(String(localized: "Filter"), systemImage: vm.isFiltering
                               ? "line.3.horizontal.decrease.circle.fill"
                               : "line.3.horizontal.decrease.circle")
                     }
 
                     Button { vm.showAddSheet = true } label: {
-                        Label(lang.addItem, systemImage: "plus")
+                        Label(String(localized: "Add"), systemImage: "plus")
                     }
                 }
             }
@@ -101,7 +100,7 @@ struct StorageListView: View {
                         }
                         .onDelete { offsets in vm.delete(from: locationItems, at: offsets, in: modelContext) }
                     } header: {
-                        Label(location.localizedName(in: lang), systemImage: location.icon)
+                        Label(location.localizedName, systemImage: location.icon)
                     }
                 }
             }
@@ -123,11 +122,11 @@ struct StorageListView: View {
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label(lang.noStorageTitle, systemImage: "cart")
+            Label(String(localized: "No Storage Items"), systemImage: "cart")
         } description: {
-            Text(lang.addStorageHint)
+            Text(String(localized: "Add ingredients you have at home."))
         } actions: {
-            Button(lang.addItem) { vm.showAddSheet = true }
+            Button(String(localized: "Add")) { vm.showAddSheet = true }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -136,10 +135,10 @@ struct StorageListView: View {
 
     private func sortLabel(for order: StorageSortOrder) -> String {
         switch order {
-        case .byLocation:    return lang.filterByLocation
-        case .nameAsc:       return lang.sortByNameAZ
-        case .nameDesc:      return lang.sortByNameZA
-        case .expirySoonest: return lang.sortByExpiry
+        case .byLocation:    return String(localized: "Location")
+        case .nameAsc:       return String(localized: "Name A–Z")
+        case .nameDesc:      return String(localized: "Name Z–A")
+        case .expirySoonest: return String(localized: "Expiry (soonest first)")
         }
     }
 }
@@ -151,7 +150,6 @@ private struct StorageRowView: View {
     @Environment(AppSettings.self) private var appSettings
     let item: StorageItem
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         HStack {
@@ -184,10 +182,10 @@ private struct StorageRowView: View {
         guard let expiry = item.expiryDate else { return "" }
         let days = Calendar.current.dateComponents([.day], from: .now, to: expiry).day ?? 0
         switch days {
-        case ..<0:  return lang.expired
-        case 0:     return lang.expiresToday
-        case 1:     return lang.expiresTomorrow
-        case 2...7: return lang.expiresInDays(days)
+        case ..<0:  return String(localized: "Expired")
+        case 0:     return String(localized: "Expires today")
+        case 1:     return String(localized: "Expires tomorrow")
+        case 2...7: return String(localized: "Expires in \(days) days")
         default:    return expiry.formatted(date: .abbreviated, time: .omitted)
         }
     }
@@ -210,21 +208,20 @@ private struct StorageFilterView: View {
     @Environment(AppSettings.self) private var appSettings
     @Binding var filter: StorageFilter
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         NavigationStack {
             Form {
                 // ── Expiry ────────────────────────────────────────
-                Section(lang.expiryDateSection) {
-                    Toggle(lang.filterExpiringSoon, isOn: $filter.expiringSoon)
+                Section(String(localized: "Expiry Date")) {
+                    Toggle(String(localized: "Expiring within 7 days"), isOn: $filter.expiringSoon)
                         .onChange(of: filter.expiringSoon) { _, on in if on { filter.expired = false } }
-                    Toggle(lang.filterExpired, isOn: $filter.expired)
+                    Toggle(String(localized: "Show expired items"), isOn: $filter.expired)
                         .onChange(of: filter.expired) { _, on in if on { filter.expiringSoon = false } }
                 }
 
                 // ── Location ──────────────────────────────────────
-                Section(lang.filterByLocation) {
+                Section(String(localized: "Location")) {
                     ForEach(StorageLocation.allCases, id: \.self) { location in
                         Button {
                             if filter.locations.contains(location) {
@@ -237,7 +234,7 @@ private struct StorageFilterView: View {
                                 Image(systemName: location.icon)
                                     .foregroundStyle(.secondary)
                                     .frame(width: 20)
-                                Text(location.localizedName(in: lang))
+                                Text(location.localizedName)
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 if filter.locations.contains(location) {
@@ -250,7 +247,7 @@ private struct StorageFilterView: View {
                 }
 
                 // ── Category ──────────────────────────────────────
-                Section(lang.shoppingCategoryLabel) {
+                Section(String(localized: "Category")) {
                     ForEach(ShoppingCategory.allCases) { category in
                         Button {
                             if filter.categories.contains(category) {
@@ -263,7 +260,7 @@ private struct StorageFilterView: View {
                                 Image(systemName: category.icon)
                                     .foregroundStyle(.secondary)
                                     .frame(width: 20)
-                                Text(category.localizedName(in: lang))
+                                Text(category.localizedName)
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 if filter.categories.contains(category) {
@@ -276,14 +273,14 @@ private struct StorageFilterView: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(lang.filterTitle)
+            .navigationTitle(String(localized: "Filter"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.reset) { filter.reset() }
+                    Button(String(localized: "Reset")) { filter.reset() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.done) { dismiss() }
+                    Button(String(localized: "Done")) { dismiss() }
                 }
             }
         }

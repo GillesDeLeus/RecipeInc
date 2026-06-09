@@ -18,7 +18,7 @@ final class NotificationManager {
 
         // Read model properties on the caller's actor; the completion below
         // runs on a background queue where touching SwiftData models is unsafe.
-        let ingredientName = item.ingredient?.name ?? "Item"
+        let ingredientName = item.ingredient?.name ?? String(localized: "Item")
         let token = item.notificationToken
 
         let center = UNUserNotificationCenter.current()
@@ -42,7 +42,6 @@ final class NotificationManager {
 
     private func schedule(token: String, ingredientName: String, expiry: Date) {
         let center = UNUserNotificationCenter.current()
-        let lang = AppLanguage(rawValue: UserDefaults.standard.string(forKey: "appLanguage") ?? "en") ?? .english
 
         for daysOffset in [2, 1] {
             guard let fireDate = Calendar.current.date(byAdding: .day, value: -daysOffset, to: expiry),
@@ -53,10 +52,10 @@ final class NotificationManager {
             components.minute = UserDefaults.standard.object(forKey: "notificationMinute") as? Int ?? 0
 
             let content = UNMutableNotificationContent()
-            content.title = lang.notificationExpiryTitle
+            content.title = String(localized: "Expiry Reminder")
             content.body = daysOffset == 1
-                ? lang.notificationExpiresTomorrow(ingredientName)
-                : lang.notificationExpiresInDays(ingredientName, daysOffset)
+                ? String(localized: "\(ingredientName) expires tomorrow.")
+                : String(localized: "\(ingredientName) expires in \(daysOffset) days.")
             content.sound = .default
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)

@@ -11,7 +11,6 @@ struct ShoppingListView: View {
     @Query(sort: \MealPlan.date) private var allMealPlans: [MealPlan]
     @Query private var allStorageItems: [StorageItem]
 
-    private var lang: AppLanguage { appSettings.language }
 
     private struct ShoppingItem: Identifiable {
         let id: String   // "name|unit"
@@ -93,14 +92,14 @@ struct ShoppingListView: View {
             Group {
                 if shoppingItems.isEmpty {
                     ContentUnavailableView {
-                        Label(lang.shoppingList, systemImage: "cart")
+                        Label(String(localized: "Shopping List"), systemImage: "cart")
                     } description: {
-                        Text(lang.noShoppingItemsHint)
+                        Text(String(localized: "No recipe ingredients for the selected meals."))
                     }
                 } else {
                     List {
                         // ── Selected dates ────────────────────────
-                        Section(lang.selectedDatesSection) {
+                        Section(String(localized: "Selected Dates")) {
                             ForEach(sortedDates, id: \.self) { date in
                                 Text(date, style: .date)
                                     .font(.subheadline)
@@ -109,13 +108,13 @@ struct ShoppingListView: View {
 
                         // ── Recipes / portions ────────────────────
                         if !recipeMeals.isEmpty {
-                            Section(lang.tabRecipes) {
+                            Section(String(localized: "Recipes")) {
                                 ForEach(recipeMeals) { meal in
                                     HStack {
                                         Text(meal.recipe?.name ?? "")
                                         Spacer()
                                         let p = meal.portions
-                                        Text("\(p) \(p == 1 ? lang.portionSingular : lang.portionPlural)")
+                                        Text("\(p) \(p == 1 ? String(localized: "portion") : String(localized: "portions"))")
                                             .foregroundStyle(.secondary)
                                             .font(.subheadline)
                                     }
@@ -125,7 +124,7 @@ struct ShoppingListView: View {
 
                         // ── Custom meals ──────────────────────────
                         if !customMeals.isEmpty {
-                            Section(lang.customMealsSection) {
+                            Section(String(localized: "Custom Meals (no ingredients)")) {
                                 ForEach(customMeals) { meal in
                                     Text(meal.displayName)
                                         .foregroundStyle(.secondary)
@@ -142,12 +141,12 @@ struct ShoppingListView: View {
                                         itemRow(item)
                                     }
                                 } header: {
-                                    Label(category.localizedName(in: lang),
+                                    Label(category.localizedName,
                                           systemImage: category.icon)
                                 }
                             }
                         } else {
-                            Section(lang.ingredientsTitle) {
+                            Section(String(localized: "Ingredients")) {
                                 ForEach(shoppingItems) { item in
                                     itemRow(item)
                                 }
@@ -156,21 +155,21 @@ struct ShoppingListView: View {
                     }
                 }
             }
-            .navigationTitle(lang.shoppingList)
+            .navigationTitle(String(localized: "Shopping List"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.done) { dismiss() }
+                    Button(String(localized: "Done")) { dismiss() }
                 }
                 ToolbarItem(placement: .secondaryAction) {
                     #if os(iOS)
                     Button { showShareSheet = true } label: {
-                        Label(lang.shareShoppingList, systemImage: "square.and.arrow.up")
+                        Label(String(localized: "Share List"), systemImage: "square.and.arrow.up")
                     }
                     .disabled(shoppingItems.isEmpty)
                     #else
                     ShareLink(item: shareText) {
-                        Label(lang.shareShoppingList, systemImage: "square.and.arrow.up")
+                        Label(String(localized: "Share List"), systemImage: "square.and.arrow.up")
                     }
                     .disabled(shoppingItems.isEmpty)
                     #endif
@@ -179,7 +178,7 @@ struct ShoppingListView: View {
                     Button {
                         isGrouped.toggle()
                     } label: {
-                        Label(lang.groupByCategory,
+                        Label(String(localized: "Group by Category"),
                               systemImage: isGrouped ? "rectangle.3.group.fill" : "rectangle.3.group")
                     }
                     .disabled(shoppingItems.isEmpty)
@@ -188,7 +187,7 @@ struct ShoppingListView: View {
                     Button {
                         deductStorage.toggle()
                     } label: {
-                        Label(lang.deductFromStorage,
+                        Label(String(localized: "Deduct from storage"),
                               systemImage: deductStorage ? "house.fill" : "house")
                     }
                     .disabled(shoppingItems.isEmpty)
@@ -197,14 +196,14 @@ struct ShoppingListView: View {
                     Button {
                         showAisleOrder = true
                     } label: {
-                        Label(lang.aisleOrderTitle, systemImage: "arrow.up.arrow.down.square")
+                        Label(String(localized: "Aisle Order"), systemImage: "arrow.up.arrow.down.square")
                     }
                 }
                 ToolbarItem(placement: .secondaryAction) {
                     Button {
                         addAllToMyList()
                     } label: {
-                        Label(lang.addAllToShoppingList, systemImage: "checklist.checked")
+                        Label(String(localized: "Add All to My List"), systemImage: "checklist.checked")
                     }
                     .disabled(shoppingItems.isEmpty)
                 }
@@ -229,30 +228,30 @@ struct ShoppingListView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
-        var lines: [String] = [lang.shoppingList, ""]
+        var lines: [String] = [String(localized: "Shopping List"), ""]
 
         lines.append(sortedDates.map { formatter.string(from: $0) }.joined(separator: " · "))
 
         if !recipeMeals.isEmpty {
             lines.append("")
-            lines.append(lang.tabRecipes + ":")
+            lines.append(String(localized: "Recipes") + ":")
             for meal in recipeMeals {
                 let p = meal.portions
-                let portionStr = "\(p) \(p == 1 ? lang.portionSingular : lang.portionPlural)"
+                let portionStr = "\(p) \(p == 1 ? String(localized: "portion") : String(localized: "portions"))"
                 lines.append("• \(meal.recipe?.name ?? "") (\(portionStr))")
             }
         }
 
         lines.append("")
-        lines.append(lang.ingredientsTitle + ":")
+        lines.append(String(localized: "Ingredients") + ":")
         for item in shoppingItems {
             let stored = deductStorage ? (storageByKey[item.id] ?? 0) : 0
             let needed = max(0, item.amount - stored)
             let isFullyCovered = deductStorage && needed == 0
             let prefix = (checkedIDs.contains(item.id) || isFullyCovered) ? "✓" : "•"
             let suffix = isFullyCovered
-                ? " (\(lang.fullyInStorage.lowercased()))"
-                : (stored > 0 && needed > 0 ? " (\(lang.haveInStorage(formatAmount(stored, unit: item.unit))))" : "")
+                ? " (\(String(localized: "In storage").lowercased()))"
+                : (stored > 0 && needed > 0 ? " (\(String(localized: "have \(formatAmount(stored, unit: item.unit)) in storage")))" : "")
             lines.append("\(prefix) \(formattedItem(item, amount: isFullyCovered ? item.amount : needed))\(suffix)")
         }
 
@@ -306,11 +305,11 @@ struct ShoppingListView: View {
                         .foregroundStyle(isChecked || isFullyCovered ? Color.secondary : Color.primary)
 
                     if isFullyCovered {
-                        Text(lang.fullyInStorage)
+                        Text(String(localized: "In storage"))
                             .font(.caption)
                             .foregroundStyle(.green)
                     } else if isPartiallyCovered {
-                        Text(lang.haveInStorage(formatAmount(stored, unit: item.unit)))
+                        Text(String(localized: "have \(formatAmount(stored, unit: item.unit)) in storage"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

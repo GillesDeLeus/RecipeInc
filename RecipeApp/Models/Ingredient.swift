@@ -28,17 +28,17 @@ enum ShoppingCategory: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    func localizedName(in lang: AppLanguage) -> String {
+    var localizedName: String {
         switch self {
-        case .produce:   return lang.categoryProduce
-        case .dairy:     return lang.categoryDairy
-        case .meat:      return lang.categoryMeat
-        case .frozen:    return lang.categoryFrozen
-        case .pantry:    return lang.categoryPantry
-        case .bakery:    return lang.categoryBakery
-        case .beverages: return lang.categoryBeverages
-        case .herbs:     return lang.categoryHerbs
-        case .other:     return lang.categoryOther
+        case .produce:   return String(localized: "Produce")
+        case .dairy:     return String(localized: "Dairy & Eggs")
+        case .meat:      return String(localized: "Meat & Fish")
+        case .frozen:    return String(localized: "Frozen")
+        case .pantry:    return String(localized: "Pantry")
+        case .bakery:    return String(localized: "Bakery")
+        case .beverages: return String(localized: "Beverages")
+        case .herbs:     return String(localized: "Herbs & Spices")
+        case .other:     return String(localized: "Other")
         }
     }
 }

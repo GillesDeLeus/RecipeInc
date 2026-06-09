@@ -24,13 +24,13 @@ enum MealType: String, Codable, CaseIterable {
         }
     }
 
-    func localizedName(in language: AppLanguage) -> String {
+    var localizedName: String {
         switch self {
-        case .breakfast: return language.breakfastLabel
-        case .lunch:     return language.lunchLabel
-        case .dinner:    return language.dinnerLabel
-        case .snack:     return language.snackLabel
-        case .other:     return language.otherMealLabel
+        case .breakfast: return String(localized: "Breakfast")
+        case .lunch:     return String(localized: "Lunch")
+        case .dinner:    return String(localized: "Dinner")
+        case .snack:     return String(localized: "Snack")
+        case .other:     return String(localized: "Other")
         }
     }
 }
@@ -50,7 +50,7 @@ final class MealPlan {
 
     var displayName: String {
         if let recipe { return recipe.name }
-        return customName.isEmpty ? "Meal" : customName
+        return customName.isEmpty ? String(localized: "Meal") : customName
     }
 
     init(date: Date,

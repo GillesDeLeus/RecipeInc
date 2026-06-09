@@ -23,7 +23,7 @@ enum NutritionServiceError: LocalizedError {
     case noResults
 
     var errorDescription: String? {
-        "Ingredient not found in the local database. Try a more common or Dutch name."
+        String(localized: "Ingredient not found in the local database. Try a more common or Dutch name.")
     }
 }
 

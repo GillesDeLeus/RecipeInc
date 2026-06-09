@@ -15,7 +15,6 @@ struct StorageFormView: View {
     var item: StorageItem?
 
     private var isEditing: Bool { item != nil }
-    private var lang: AppLanguage { appSettings.language }
 
     // MARK: - Form state
 
@@ -53,9 +52,9 @@ struct StorageFormView: View {
         NavigationStack {
             Form {
                 // ── Ingredient ────────────────────────────────────
-                Section(lang.ingredientLabel) {
-                    Picker(lang.ingredientLabel, selection: $selectedIngredient) {
-                        Text(lang.chooseIngredient)
+                Section(String(localized: "Ingredient")) {
+                    Picker(String(localized: "Ingredient"), selection: $selectedIngredient) {
+                        Text(String(localized: "Choose an ingredient"))
                             .tag(nil as Ingredient?)
                         ForEach(allIngredients) { ingredient in
                             Text(ingredient.name)
@@ -68,7 +67,7 @@ struct StorageFormView: View {
                         if isLookingUp {
                             HStack(spacing: 10) {
                                 ProgressView()
-                                Text(lang.scanningBarcode)
+                                Text(String(localized: "Looking up product…"))
                                     .foregroundStyle(.secondary)
                                     .font(.subheadline)
                             }
@@ -77,18 +76,18 @@ struct StorageFormView: View {
                                 scanResult = nil
                                 requestCameraAndScan()
                             } label: {
-                                Label(lang.scanBarcode, systemImage: "barcode.viewfinder")
+                                Label(String(localized: "Scan Barcode"), systemImage: "barcode.viewfinder")
                             }
                         }
 
                         if let result = scanResult {
                             switch result {
                             case .found(let name):
-                                Label(lang.productFound(name), systemImage: "checkmark.circle.fill")
+                                Label(String(localized: "Found: \(name)"), systemImage: "checkmark.circle.fill")
                                     .font(.caption)
                                     .foregroundStyle(.green)
                             case .notFound:
-                                Label(lang.barcodeNotFound, systemImage: "exclamationmark.triangle")
+                                Label(String(localized: "Product not found. Select manually."), systemImage: "exclamationmark.triangle")
                                     .font(.caption)
                                     .foregroundStyle(.orange)
                             }
@@ -98,7 +97,7 @@ struct StorageFormView: View {
                 }
 
                 // ── Amount ────────────────────────────────────────
-                Section(lang.amountLabel) {
+                Section(String(localized: "Amount")) {
                     HStack {
                         TextField("0", value: $amount, format: .number)
                             .textFieldStyle(.roundedBorder)
@@ -113,10 +112,10 @@ struct StorageFormView: View {
                 }
 
                 // ── Location ──────────────────────────────────────
-                Section(lang.locationLabel) {
-                    Picker(lang.locationLabel, selection: $location) {
+                Section(String(localized: "Location")) {
+                    Picker(String(localized: "Location"), selection: $location) {
                         ForEach(StorageLocation.allCases, id: \.self) { loc in
-                            Label(loc.localizedName(in: lang), systemImage: loc.icon)
+                            Label(loc.localizedName, systemImage: loc.icon)
                                 .tag(loc)
                         }
                     }
@@ -124,11 +123,11 @@ struct StorageFormView: View {
                 }
 
                 // ── Expiry date ───────────────────────────────────
-                Section(lang.expiryDateSection) {
-                    Toggle(lang.hasExpiryToggle, isOn: $hasExpiry.animation())
+                Section(String(localized: "Expiry Date")) {
+                    Toggle(String(localized: "Has expiry date"), isOn: $hasExpiry.animation())
                     if hasExpiry {
                         DatePicker(
-                            lang.expiryDateField,
+                            String(localized: "Date"),
                             selection: $expiryDate,
                             in: Date()...,
                             displayedComponents: .date
@@ -137,14 +136,14 @@ struct StorageFormView: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(isEditing ? lang.editStorageItem : lang.newStorageItem)
+            .navigationTitle(isEditing ? String(localized: "Edit Storage Item") : String(localized: "New Storage Item"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isEditing ? lang.save : lang.addItem) {
+                    Button(isEditing ? String(localized: "Save") : String(localized: "Add")) {
                         save()
                         dismiss()
                     }
@@ -162,7 +161,7 @@ struct StorageFormView: View {
                         UIApplication.shared.open(url)
                     }
                 }
-                Button(lang.cancel, role: .cancel) {}
+                Button(String(localized: "Cancel"), role: .cancel) {}
             } message: {
                 Text("Please allow camera access in Settings to scan barcodes.")
             }

@@ -58,18 +58,20 @@ final class IngredientListViewModel {
 
     // MARK: - Mutations
 
-    func delete(ingredient: Ingredient, storageItems: [StorageItem], in context: ModelContext, lang: AppLanguage) {
+    func delete(ingredient: Ingredient, storageItems: [StorageItem], in context: ModelContext) {
         let recipeCount  = ingredient.recipeIngredients.count
         let storageCount = storageItems.filter {
             $0.ingredient?.persistentModelID == ingredient.persistentModelID
         }.count
 
         if recipeCount > 0 || storageCount > 0 {
+            var parts: [String] = []
+            if recipeCount > 0  { parts.append(String(localized: "\(recipeCount) recipes")) }
+            if storageCount > 0 { parts.append(String(localized: "\(storageCount) storage items")) }
+            let usage = parts.formatted(.list(type: .and))
             inUseAlert = InUseAlert(
-                title: lang.ingredientInUseTitle,
-                message: lang.ingredientInUseMessage(ingredient.name,
-                                                     recipes: recipeCount,
-                                                     storage: storageCount)
+                title: String(localized: "Cannot Delete Ingredient"),
+                message: String(localized: "\"\(ingredient.name)\" is used in \(usage). Remove those references first.")
             )
         } else {
             context.delete(ingredient)

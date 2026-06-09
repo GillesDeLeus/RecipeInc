@@ -19,7 +19,6 @@ struct RecipeDetailView: View {
         self._vm = State(initialValue: RecipeDetailViewModel(recipe: recipe))
     }
 
-    private var lang: AppLanguage { appSettings.language }
 
     // MARK: - Body
 
@@ -54,8 +53,8 @@ struct RecipeDetailView: View {
 
                 // ── Meta row ─────────────────────────────────────────
                 HStack(spacing: 16) {
-                    Label(lang.formattedPrepTime(recipe.prepTimeMinutes), systemImage: "clock")
-                    Label(lang.ingredientCount(recipe.recipeIngredients.count), systemImage: "list.bullet")
+                    Label(TimeFormat.prepTime(recipe.prepTimeMinutes), systemImage: "clock")
+                    Label(String(localized: "\(recipe.recipeIngredients.count) ingredients"), systemImage: "list.bullet")
                     Spacer()
                     StarRatingView(rating: recipe.rating) { recipe.rating = $0 }
                         .font(.subheadline)
@@ -93,12 +92,12 @@ struct RecipeDetailView: View {
                 // ── Ingredients ──────────────────────────────────────
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
-                        Text(lang.ingredientsTitle)
+                        Text(String(localized: "Ingredients"))
                             .font(.title2).fontWeight(.semibold)
                         Spacer()
                         Stepper(value: $vm.portions, in: 1...20) {
                             HStack(spacing: 4) {
-                                Text(lang.servingsLabel)
+                                Text(String(localized: "Servings"))
                                     .font(.subheadline).foregroundStyle(.secondary)
                                 Text("\(vm.portions)")
                                     .font(.subheadline).fontWeight(.semibold).monospacedDigit()
@@ -107,7 +106,7 @@ struct RecipeDetailView: View {
                     }
 
                     if recipe.recipeIngredients.isEmpty {
-                        Text(lang.noIngredientsAdded).foregroundStyle(.secondary).italic()
+                        Text(String(localized: "No ingredients added.")).foregroundStyle(.secondary).italic()
                     } else {
                         let sorted = recipe.recipeIngredients
                             .sorted { ($0.ingredient?.name ?? "") < ($1.ingredient?.name ?? "") }
@@ -128,7 +127,7 @@ struct RecipeDetailView: View {
                         }
                         if vm.ingredientsMissingNutrition {
                             Button { vm.lookupAllMissingNutrition() } label: {
-                                Label(lang.lookupNutrition, systemImage: "magnifyingglass")
+                                Label(String(localized: "Look Up Nutrition"), systemImage: "magnifyingglass")
                             }
                             .font(.subheadline)
                         }
@@ -139,9 +138,9 @@ struct RecipeDetailView: View {
 
                 // ── Instructions ─────────────────────────────────────
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(lang.preparation).font(.title2).fontWeight(.semibold)
+                    Text(String(localized: "Preparation")).font(.title2).fontWeight(.semibold)
                     if recipe.instructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Text(lang.noPreparation).foregroundStyle(.secondary).italic()
+                        Text(String(localized: "No preparation instructions added.")).foregroundStyle(.secondary).italic()
                     } else {
                         Text(recipe.instructions).font(.body).lineSpacing(4)
                     }
@@ -158,24 +157,24 @@ struct RecipeDetailView: View {
                         vm.showCookMode = true
                         cookModeTip.invalidate(reason: .actionPerformed)
                     } label: {
-                        Label(lang.cookMode, systemImage: "flame")
+                        Label(String(localized: "Cook Mode"), systemImage: "flame")
                     }
                 }
                 Menu {
-                    ShareLink(item: vm.shareText(lang: lang)) {
-                        Label(lang.shareRecipe, systemImage: "square.and.arrow.up")
+                    ShareLink(item: vm.shareText()) {
+                        Label(String(localized: "Share Recipe"), systemImage: "square.and.arrow.up")
                     }
                     Divider()
                     Button { vm.showEditSheet = true } label: {
-                        Label(lang.editAction, systemImage: "pencil")
+                        Label(String(localized: "Edit"), systemImage: "pencil")
                     }
-                    Button { vm.duplicateRecipe(in: modelContext, lang: lang) } label: {
-                        Label(lang.duplicateRecipe, systemImage: "doc.on.doc")
+                    Button { vm.duplicateRecipe(in: modelContext) } label: {
+                        Label(String(localized: "Duplicate Recipe"), systemImage: "doc.on.doc")
                     }
                     Button(role: .destructive) {
-                        vm.requestDelete(in: modelContext, lang: lang)
+                        vm.requestDelete(in: modelContext)
                     } label: {
-                        Label(lang.delete, systemImage: "trash")
+                        Label(String(localized: "Delete"), systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -197,30 +196,30 @@ struct RecipeDetailView: View {
                 .frame(minWidth: 620, minHeight: 520)
         }
         #endif
-        .alert(lang.recipeFutureScheduledTitle, isPresented: $vm.showFutureScheduledAlert) {
-            Button(lang.cancel, role: .cancel) {}
+        .alert(String(localized: "Recipe Is Scheduled"), isPresented: $vm.showFutureScheduledAlert) {
+            Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text(lang.recipeFutureScheduledMessage(recipe.name, vm.futureBlockCount))
+            Text(String(localized: "\"\(recipe.name)\" is planned \(vm.futureBlockCount) times in the future. Remove it from the calendar first."))
         }
-        .confirmationDialog(lang.deleteRecipeTitle,
+        .confirmationDialog(String(localized: "Delete Recipe?"),
                             isPresented: $vm.showDeleteWithPastPlans,
                             titleVisibility: .visible) {
-            Button(lang.delete, role: .destructive) {
+            Button(String(localized: "Delete"), role: .destructive) {
                 vm.executeDelete(removePastPlans: true, in: modelContext) { dismiss() }
             }
-            Button(lang.cancel, role: .cancel) {}
+            Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text(lang.deleteRecipeWithPastPlansMessage(recipe.name, vm.pastPlanCount))
+            Text(String(localized: "\"\(recipe.name)\" was planned \(vm.pastPlanCount) times in the past. Those calendar entries will also be deleted."))
         }
-        .confirmationDialog(lang.deleteRecipeTitle,
+        .confirmationDialog(String(localized: "Delete Recipe?"),
                             isPresented: $vm.showDeleteConfirmation,
                             titleVisibility: .visible) {
-            Button(lang.delete, role: .destructive) {
+            Button(String(localized: "Delete"), role: .destructive) {
                 vm.executeDelete(removePastPlans: false, in: modelContext) { dismiss() }
             }
-            Button(lang.cancel, role: .cancel) {}
+            Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text(lang.deleteRecipeMessage(recipe.name))
+            Text(String(localized: "\u{201C}\(recipe.name)\u{201D} will be permanently deleted."))
         }
     }
 
@@ -229,41 +228,41 @@ struct RecipeDetailView: View {
     @ViewBuilder
     private func nutritionSection(_ n: RecipeNutrition) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(lang.nutritionTitle)
+            Text(String(localized: "Nutrition"))
                 .font(.title2).fontWeight(.semibold)
 
             HStack(spacing: 0) {
-                nutritionCell(lang.nutritionCalories, value: n.calories, unit: "kcal", color: .orange)
-                nutritionCell(lang.nutritionProtein,  value: n.protein,  unit: "g",    color: .blue)
-                nutritionCell(lang.nutritionFat,      value: n.fat,      unit: "g",    color: .yellow)
-                nutritionCell(lang.nutritionCarbs,    value: n.carbs,    unit: "g",    color: .green)
-                nutritionCell(lang.nutritionFiber,    value: n.fiber,    unit: "g",    color: .brown)
+                nutritionCell(String(localized: "Calories"), value: n.calories, unit: "kcal", color: .orange)
+                nutritionCell(String(localized: "Protein"),  value: n.protein,  unit: "g",    color: .blue)
+                nutritionCell(String(localized: "Fat"),      value: n.fat,      unit: "g",    color: .yellow)
+                nutritionCell(String(localized: "Carbs"),    value: n.carbs,    unit: "g",    color: .green)
+                nutritionCell(String(localized: "Fiber"),    value: n.fiber,    unit: "g",    color: .brown)
             }
             .padding(12)
             .background(Color.secondary.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
             VStack(spacing: 6) {
-                nutritionDetailRow(lang.nutritionSatFat,    value: n.satFat,    unit: "g")
-                nutritionDetailRow(lang.nutritionSugars,    value: n.sugars,    unit: "g")
+                nutritionDetailRow(String(localized: "of which Saturated Fat"),    value: n.satFat,    unit: "g")
+                nutritionDetailRow(String(localized: "of which Sugars"),    value: n.sugars,    unit: "g")
                 Divider()
-                nutritionDetailRow(lang.nutritionSodium,    value: n.sodium,    unit: "mg", decimals: 0)
-                nutritionDetailRow(lang.nutritionPotassium, value: n.potassium, unit: "mg", decimals: 0)
-                nutritionDetailRow(lang.nutritionCalcium,   value: n.calcium,   unit: "mg", decimals: 0)
-                nutritionDetailRow(lang.nutritionIron,      value: n.iron,      unit: "mg")
+                nutritionDetailRow(String(localized: "Sodium"),    value: n.sodium,    unit: "mg", decimals: 0)
+                nutritionDetailRow(String(localized: "Potassium"), value: n.potassium, unit: "mg", decimals: 0)
+                nutritionDetailRow(String(localized: "Calcium"),   value: n.calcium,   unit: "mg", decimals: 0)
+                nutritionDetailRow(String(localized: "Iron"),      value: n.iron,      unit: "mg")
                 Divider()
-                nutritionDetailRow(lang.nutritionVitC,      value: n.vitC,      unit: "mg")
-                nutritionDetailRow(lang.nutritionVitD,      value: n.vitD,      unit: "µg")
+                nutritionDetailRow(String(localized: "Vitamin C"),      value: n.vitC,      unit: "mg")
+                nutritionDetailRow(String(localized: "Vitamin D"),      value: n.vitD,      unit: "µg")
             }
             .padding(12)
             .background(Color.secondary.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
             if n.includedCount < n.totalCount {
-                Text(lang.nutritionIngredientNote(n.includedCount, n.totalCount))
+                Text(String(localized: "Based on \(n.includedCount)/\(n.totalCount) ingredients (g/ml units only)"))
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Text(lang.nutritionSource)
+            Text(String(localized: "Based on data from NEVO online version 2025/9.0, RIVM, Bilthoven"))
                 .font(.caption2).foregroundStyle(.tertiary)
         }
     }

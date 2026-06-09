@@ -13,10 +13,9 @@ struct ContentView: View {
     @State private var pendingImportImageData: Data?
 
     var body: some View {
-        let lang = appSettings.language
         TabView {
             RecipeListView()
-                .tabItem { Label(lang.tabRecipes, systemImage: "fork.knife") }
+                .tabItem { Label(String(localized: "Recipes"), systemImage: "fork.knife") }
 
             // Calendar is a core daily-use feature and must stay in the first 5
             // slots. With all three optional features on (Calendar + Shopping +
@@ -24,25 +23,25 @@ struct ContentView: View {
             // owns its own NavigationStack, so it works correctly in the overflow.
             if appSettings.featureCalendar {
                 CalendarView()
-                    .tabItem { Label(lang.tabCalendar, systemImage: "calendar") }
+                    .tabItem { Label(String(localized: "Calendar"), systemImage: "calendar") }
             }
 
             if appSettings.featureShopping {
                 PersistentShoppingListView()
-                    .tabItem { Label(lang.tabShoppingList, systemImage: "checklist") }
+                    .tabItem { Label(String(localized: "Shopping"), systemImage: "checklist") }
                     .badge(uncheckedShoppingItems.count > 0 ? uncheckedShoppingItems.count : 0)
             }
 
             if appSettings.featureStorage {
                 StorageListView()
-                    .tabItem { Label(lang.tabStorage, systemImage: "cart") }
+                    .tabItem { Label(String(localized: "Storage"), systemImage: "cart") }
             }
 
             IngredientListView()
-                .tabItem { Label(lang.tabIngredients, systemImage: "carrot") }
+                .tabItem { Label(String(localized: "Ingredients"), systemImage: "carrot") }
 
             SettingsView()
-                .tabItem { Label(lang.tabSettings, systemImage: "gear") }
+                .tabItem { Label(String(localized: "Settings"), systemImage: "gear") }
         }
         .onAppear(perform: seedDefaultData)
         .onChange(of: scenePhase) { _, newPhase in
@@ -77,34 +76,33 @@ struct ContentView: View {
         let categoryCount = (try? modelContext.fetchCount(FetchDescriptor<RecipeCategory>())) ?? 0
         guard categoryCount == 0 else { return }
 
-        let lang = appSettings.language
         let categories = [
-            lang.t("Breakfast", "Ontbijt"),
-            lang.t("Lunch", "Lunch"),
-            lang.t("Dinner", "Avondeten"),
-            lang.t("Dessert", "Dessert"),
-            lang.t("Snack", "Snack"),
-            lang.t("Soup", "Soep"),
-            lang.t("Salad", "Salade"),
-            lang.t("Appetizer", "Voorgerecht"),
-            lang.t("Side Dish", "Bijgerecht"),
-            lang.t("Drink", "Drank")
+            String(localized: "Breakfast"),
+            String(localized: "Lunch"),
+            String(localized: "Dinner"),
+            String(localized: "Dessert"),
+            String(localized: "Snack"),
+            String(localized: "Soup"),
+            String(localized: "Salad"),
+            String(localized: "Appetizer"),
+            String(localized: "Side Dish"),
+            String(localized: "Drink")
         ]
         for name in categories {
             modelContext.insert(RecipeCategory(name: name, isCustom: false))
         }
 
         let tags: [(String, String)] = [
-            (lang.t("Quick",        "Snel"),             "#34C759"),
-            (lang.t("Vegetarian",   "Vegetarisch"),      "#30B050"),
-            (lang.t("Vegan",        "Veganistisch"),     "#00C7BE"),
-            (lang.t("Gluten-free",  "Glutenvrij"),       "#FF9500"),
-            (lang.t("Dairy-free",   "Lactosevrij"),      "#32ADE6"),
-            (lang.t("Spicy",        "Pittig"),           "#FF3B30"),
-            (lang.t("Kid-friendly", "Kindvriendelijk"),  "#FFD60A"),
-            (lang.t("Healthy",      "Gezond"),           "#5AC8FA"),
-            (lang.t("One-pot",      "Eenpansgerecht"),   "#BF5AF2"),
-            (lang.t("Make-ahead",   "Voor te bereiden"), "#5E5CE6"),
+            (String(localized: "Quick"),             "#34C759"),
+            (String(localized: "Vegetarian"),      "#30B050"),
+            (String(localized: "Vegan"),     "#00C7BE"),
+            (String(localized: "Gluten-free"),       "#FF9500"),
+            (String(localized: "Dairy-free"),      "#32ADE6"),
+            (String(localized: "Spicy"),           "#FF3B30"),
+            (String(localized: "Kid-friendly"),  "#FFD60A"),
+            (String(localized: "Healthy"),           "#5AC8FA"),
+            (String(localized: "One-pot"),   "#BF5AF2"),
+            (String(localized: "Make-ahead"), "#5E5CE6"),
         ]
         for (name, color) in tags {
             modelContext.insert(RecipeTag(name: name, colorHex: color, isCustom: false))

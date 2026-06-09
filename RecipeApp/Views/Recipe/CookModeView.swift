@@ -18,7 +18,6 @@ struct CookModeView: View {
     // FocusState lets us capture arrow-key presses on macOS
     @FocusState private var isFocused: Bool
 
-    private var lang: AppLanguage { appSettings.language }
 
     // MARK: - Step parsing
 
@@ -84,12 +83,12 @@ struct CookModeView: View {
             Image(systemName: "text.page.slash")
                 .font(.system(size: 56))
                 .foregroundStyle(.gray)
-            Text(lang.noInstructionsForCookMode)
+            Text(String(localized: "No preparation steps found.\nAdd instructions to your recipe first."))
                 .font(.body)
                 .foregroundStyle(.gray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
-            Button(lang.done) { dismiss() }
+            Button(String(localized: "Done")) { dismiss() }
                 .buttonStyle(.bordered)
                 .tint(.white)
                 .padding(.top, 8)
@@ -114,7 +113,7 @@ struct CookModeView: View {
                     .font(.headline)
                     .foregroundStyle(.white)
                     .lineLimit(1)
-                Text(lang.stepLabel(currentStep + 1, steps.count))
+                Text(String(localized: "Step \(currentStep + 1) of \(steps.count)"))
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.55))
             }
@@ -125,13 +124,13 @@ struct CookModeView: View {
                 VStack(spacing: 2) {
                     Image(systemName: "list.bullet")
                         .font(.title3)
-                    Text(lang.ingredientsTitle)
+                    Text(String(localized: "Ingredients"))
                         .font(.caption2)
                 }
                 .foregroundStyle(.white)
             }
             .buttonStyle(.plain)
-            .help(lang.ingredientsTitle)
+            .help(String(localized: "Ingredients"))
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 18)
@@ -159,9 +158,9 @@ struct CookModeView: View {
                 }
         )
         .id(currentStep)  // Re-scrolls to top when step changes
-        .accessibilityLabel(lang.stepLabel(currentStep + 1, steps.count) + ": " + steps[currentStep])
-        .accessibilityAction(named: lang.previousStep) { goPrev() }
-        .accessibilityAction(named: isLast ? lang.cookModeFinish : lang.nextStep) {
+        .accessibilityLabel(String(localized: "Step \(currentStep + 1) of \(steps.count)") + ": " + steps[currentStep])
+        .accessibilityAction(named: String(localized: "Previous")) { goPrev() }
+        .accessibilityAction(named: isLast ? String(localized: "Done Cooking") : String(localized: "Next")) {
             isLast ? dismiss() : goNext()
         }
     }
@@ -198,7 +197,7 @@ struct CookModeView: View {
             Button(action: goPrev) {
                 HStack(spacing: 6) {
                     Image(systemName: "chevron.left")
-                    Text(lang.previousStep)
+                    Text(String(localized: "Previous"))
                 }
                 .font(.headline)
                 .foregroundStyle(isFirst ? .white.opacity(0.2) : .white)
@@ -214,7 +213,7 @@ struct CookModeView: View {
             // Next / Finish
             Button { if isLast { dismiss() } else { goNext() } } label: {
                 HStack(spacing: 6) {
-                    Text(isLast ? lang.cookModeFinish : lang.nextStep)
+                    Text(isLast ? String(localized: "Done Cooking") : String(localized: "Next"))
                     if !isLast { Image(systemName: "chevron.right") }
                 }
                 .font(.headline)
@@ -276,7 +275,6 @@ private struct CookModeIngredientsView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSettings.self) private var appSettings
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         NavigationStack {
@@ -300,12 +298,12 @@ private struct CookModeIngredientsView: View {
                 }
             }
             .navigationTitle(portions == 1
-                             ? lang.ingredientsTitle
-                             : "\(lang.ingredientsTitle) (×\(portions))")
+                             ? String(localized: "Ingredients")
+                             : "\(String(localized: "Ingredients")) (×\(portions))")
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.done) { dismiss() }
+                    Button(String(localized: "Done")) { dismiss() }
                 }
             }
         }

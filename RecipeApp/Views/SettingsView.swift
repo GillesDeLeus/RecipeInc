@@ -27,26 +27,32 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        @Bindable var settings = appSettings
-        let lang = appSettings.language
-
         Form {
                 // ── Language ──────────────────────────────────────
-                Section(lang.languageLabel) {
-                    Picker(lang.languageLabel, selection: $settings.language) {
-                        ForEach(AppLanguage.allCases) { language in
-                            Text(language.displayName).tag(language)
+                Section {
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        HStack {
+                            Text(String(localized: "Language"))
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "arrow.up.forward.app")
+                                .foregroundStyle(.secondary)
+                                .font(.footnote.weight(.semibold))
                         }
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
+                } footer: {
+                    Text(String(localized: "App language can be changed in the iOS Settings app."))
                 }
 
                 // ── Features ─────────────────────────────────────
                 Section {
                     Button { showFeaturesSheet = true } label: {
                         HStack {
-                            Text(lang.featuresTitle)
+                            Text(String(localized: "Features"))
                                 .foregroundStyle(.primary)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -60,7 +66,7 @@ struct SettingsView: View {
                 Section {
                     Button { showCategoriesSheet = true } label: {
                         HStack {
-                            Text(lang.manageCategories)
+                            Text(String(localized: "Manage Categories"))
                                 .foregroundStyle(.primary)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -70,7 +76,7 @@ struct SettingsView: View {
                     }
                     Button { showTagsSheet = true } label: {
                         HStack {
-                            Text(lang.manageTags)
+                            Text(String(localized: "Manage Tags"))
                                 .foregroundStyle(.primary)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -80,7 +86,7 @@ struct SettingsView: View {
                     }
                     Button { showAisleOrderSheet = true } label: {
                         HStack {
-                            Text(lang.manageAisleOrder)
+                            Text(String(localized: "Aisle Order"))
                                 .foregroundStyle(.primary)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -94,7 +100,7 @@ struct SettingsView: View {
                 Section {
                     Button { showPrivacySheet = true } label: {
                         HStack {
-                            Text(lang.privacyPolicy)
+                            Text(String(localized: "Privacy Policy"))
                                 .foregroundStyle(.primary)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -104,15 +110,15 @@ struct SettingsView: View {
                     }
                 } footer: {
                     // ODbL (Open Food Facts) requires attribution; NEVO/RIVM requests it.
-                    Text("\(lang.dataSourcesTitle): \(lang.dataSourcesText)")
+                    Text("\(String(localized: "Data Sources")): \(String(localized: "Nutritional values are based on NEVO (RIVM, the Netherlands). Barcode product data is provided by Open Food Facts and available under the Open Database License (ODbL)."))")
                         .font(.footnote)
                 }
 
                 // ── Notifications ────────────────────────────────
                 if appSettings.featureStorage {
-                    Section(lang.notificationTimeSection) {
+                    Section(String(localized: "Expiry Notifications")) {
                         DatePicker(
-                            lang.notificationTimeLabel,
+                            String(localized: "Notify at"),
                             selection: Binding(
                                 get: {
                                     Calendar.current.date(
@@ -134,22 +140,22 @@ struct SettingsView: View {
                 }
 
                 // ── Data ─────────────────────────────────────────
-                Section(lang.dataLabel) {
+                Section(String(localized: "Data")) {
                     Button {
-                        exportData(lang: lang)
+                        exportData()
                     } label: {
-                        Label(lang.exportData, systemImage: "square.and.arrow.up")
+                        Label(String(localized: "Export Data…"), systemImage: "square.and.arrow.up")
                     }
 
                     Button {
                         showImporter = true
                     } label: {
-                        Label(lang.importData, systemImage: "square.and.arrow.down")
+                        Label(String(localized: "Import Data…"), systemImage: "square.and.arrow.down")
                     }
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(lang.settingsTitle)
+            .navigationTitle(String(localized: "Settings"))
             .navigationTitleDisplayMode(.inline)
             .fileExporter(
                 isPresented: $showExporter,
@@ -161,15 +167,14 @@ struct SettingsView: View {
                 isPresented: $showImporter,
                 allowedContentTypes: [.json]
             ) { result in
-                handleImport(result: result, lang: lang)
+                handleImport(result: result)
             }
             .alert(item: $importAlert) { state in
                 Alert(title: Text(state.title), message: Text(state.message))
             }
             .sheet(isPresented: $showConflictSheet) {
                 ConflictResolutionView(
-                    conflicts: $pendingConflicts,
-                    lang: appSettings.language
+                    conflicts: $pendingConflicts
                 ) { resolved in
                     for conflict in resolved where conflict.useImported {
                         conflict.applyImported()
@@ -182,7 +187,7 @@ struct SettingsView: View {
                     FeaturesView()
                         .toolbar {
                             ToolbarItem(placement: .confirmationAction) {
-                                Button(lang.done) { showFeaturesSheet = false }
+                                Button(String(localized: "Done")) { showFeaturesSheet = false }
                             }
                         }
                 }
@@ -193,7 +198,7 @@ struct SettingsView: View {
                     CategoryManagementView()
                         .toolbar {
                             ToolbarItem(placement: .confirmationAction) {
-                                Button(lang.done) { showCategoriesSheet = false }
+                                Button(String(localized: "Done")) { showCategoriesSheet = false }
                             }
                         }
                 }
@@ -204,7 +209,7 @@ struct SettingsView: View {
                     TagManagementView()
                         .toolbar {
                             ToolbarItem(placement: .confirmationAction) {
-                                Button(lang.done) { showTagsSheet = false }
+                                Button(String(localized: "Done")) { showTagsSheet = false }
                             }
                         }
                 }
@@ -215,7 +220,7 @@ struct SettingsView: View {
                     AisleOrderView()
                         .toolbar {
                             ToolbarItem(placement: .confirmationAction) {
-                                Button(lang.done) { showAisleOrderSheet = false }
+                                Button(String(localized: "Done")) { showAisleOrderSheet = false }
                             }
                         }
                 }
@@ -226,7 +231,7 @@ struct SettingsView: View {
                     PrivacyPolicyView()
                         .toolbar {
                             ToolbarItem(placement: .confirmationAction) {
-                                Button(lang.done) { showPrivacySheet = false }
+                                Button(String(localized: "Done")) { showPrivacySheet = false }
                             }
                         }
                 }
@@ -235,7 +240,7 @@ struct SettingsView: View {
 
     // MARK: - Actions
 
-    private func exportData(lang: AppLanguage) {
+    private func exportData() {
         let container = modelContext.container
         Task {
             do {
@@ -249,14 +254,14 @@ struct SettingsView: View {
                 showExporter = true
             } catch {
                 importAlert = ImportAlertState(
-                    title: lang.exportFailedTitle,
+                    title: String(localized: "Export Failed"),
                     message: error.localizedDescription
                 )
             }
         }
     }
 
-    private func handleImport(result: Result<URL, Error>, lang: AppLanguage) {
+    private func handleImport(result: Result<URL, Error>) {
         Task {
             do {
                 let url = try result.get()
@@ -270,8 +275,8 @@ struct SettingsView: View {
                 let outcome = try DataExportService.import(from: data, into: modelContext)
                 if outcome.conflicts.isEmpty {
                     importAlert = ImportAlertState(
-                        title: lang.importSuccessTitle,
-                        message: outcome.result.summary(in: lang)
+                        title: String(localized: "Import Complete"),
+                        message: outcome.result.summary()
                     )
                 } else {
                     pendingConflicts = outcome.conflicts
@@ -279,7 +284,7 @@ struct SettingsView: View {
                 }
             } catch {
                 importAlert = ImportAlertState(
-                    title: lang.importFailedTitle,
+                    title: String(localized: "Import Failed"),
                     message: error.localizedDescription
                 )
             }
@@ -292,30 +297,29 @@ struct SettingsView: View {
 private struct ConflictResolutionView: View {
 
     @Binding var conflicts: [ImportConflict]
-    let lang: AppLanguage
     let onApply: ([ImportConflict]) -> Void
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    Text(lang.conflictSubtitle(conflicts.count))
+                    Text(String(localized: "\(conflicts.count) items differ from your existing data."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 ForEach($conflicts) { $conflict in
-                    ConflictRowView(conflict: $conflict, lang: lang)
+                    ConflictRowView(conflict: $conflict)
                 }
             }
-            .navigationTitle(lang.resolveConflictsTitle)
+            .navigationTitle(String(localized: "Import Conflicts"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.applyConflictsAction) { onApply(conflicts) }
+                    Button(String(localized: "Apply")) { onApply(conflicts) }
                         .fontWeight(.semibold)
                 }
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { onApply([]) }
+                    Button(String(localized: "Cancel")) { onApply([]) }
                 }
             }
         }
@@ -328,7 +332,6 @@ private struct ConflictResolutionView: View {
 private struct ConflictRowView: View {
 
     @Binding var conflict: ImportConflict
-    let lang: AppLanguage
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -336,17 +339,17 @@ private struct ConflictRowView: View {
                 .font(.headline)
 
             HStack(alignment: .top, spacing: 12) {
-                detailBox(label: lang.conflictExistingLabel,
+                detailBox(label: String(localized: "Existing"),
                           text: conflict.existingDetail,
                           highlighted: !conflict.useImported)
-                detailBox(label: lang.conflictImportedLabel,
+                detailBox(label: String(localized: "Imported"),
                           text: conflict.importedDetail,
                           highlighted: conflict.useImported)
             }
 
             Picker("", selection: $conflict.useImported) {
-                Text(lang.keepExistingAction).tag(false)
-                Text(lang.useImportedAction).tag(true)
+                Text(String(localized: "Keep Existing")).tag(false)
+                Text(String(localized: "Use Imported")).tag(true)
             }
             .pickerStyle(.segmented)
         }

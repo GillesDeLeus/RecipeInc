@@ -30,7 +30,7 @@ final class RecipeIngredient {
 
     /// Human-readable display string, e.g. "200 g flour"
     var displayString: String {
-        guard let ingredient else { return "Unknown ingredient" }
+        guard let ingredient else { return String(localized: "Unknown ingredient") }
         let formattedAmount = amount.truncatingRemainder(dividingBy: 1) == 0
             ? String(Int(amount))
             : String(format: "%.1f", amount)

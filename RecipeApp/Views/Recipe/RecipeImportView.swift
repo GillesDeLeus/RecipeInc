@@ -13,7 +13,6 @@ struct RecipeImportView: View {
     @Environment(AppSettings.self) private var appSettings
     @Query(sort: \Ingredient.name) private var allIngredients: [Ingredient]
 
-    private var lang: AppLanguage { appSettings.language }
 
     // Pre-populated values from Share Extension
     private let prefilledURL: String?
@@ -67,10 +66,10 @@ struct RecipeImportView: View {
                 // ── Mode picker ───────────────────────────────────
                 Section {
                     Picker("", selection: $mode) {
-                        Text(lang.importFromURL).tag(ImportMode.url)
-                        Text(lang.importFromPhoto).tag(ImportMode.photo)
-                        Text(lang.importFromText).tag(ImportMode.text)
-                        Text(lang.generateRecipe).tag(ImportMode.generate)
+                        Text(String(localized: "From URL")).tag(ImportMode.url)
+                        Text(String(localized: "From Photo")).tag(ImportMode.photo)
+                        Text(String(localized: "Paste Text")).tag(ImportMode.text)
+                        Text(String(localized: "Generate")).tag(ImportMode.generate)
                     }
                     .pickerStyle(.segmented)
                     .onChange(of: mode) { _, _ in loadState = .idle }
@@ -79,7 +78,7 @@ struct RecipeImportView: View {
                 // ── AI disclaimer ─────────────────────────────────
                 Section {
                     Label {
-                        Text(lang.aiImportDisclaimer)
+                        Text(String(localized: "AI-assisted import is experimental and may make mistakes. All processing happens on-device — no data is sent to external servers."))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     } icon: {
@@ -117,7 +116,7 @@ struct RecipeImportView: View {
                                 mode = .text
                                 loadState = .idle
                             } label: {
-                                Label(lang.importFromText, systemImage: "doc.on.clipboard")
+                                Label(String(localized: "Paste Text"), systemImage: "doc.on.clipboard")
                             }
                         }
                     }
@@ -126,15 +125,15 @@ struct RecipeImportView: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(lang.importRecipeTitle)
+            .navigationTitle(String(localized: "Import Recipe"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 if case .success = loadState {
                     ToolbarItem(placement: .confirmationAction) {
-                        Button(lang.addToRecipes) { saveRecipe(); dismiss() }
+                        Button(String(localized: "Add to Recipes")) { saveRecipe(); dismiss() }
                             .fontWeight(.semibold)
                     }
                 }
@@ -193,14 +192,14 @@ struct RecipeImportView: View {
     // MARK: - URL Section
 
     private var urlInputSection: some View {
-        Section(lang.importFromURL) {
-            TextField(lang.urlPlaceholder, text: $urlText)
+        Section(String(localized: "From URL")) {
+            TextField(String(localized: "Paste recipe URL…"), text: $urlText)
                 #if os(iOS)
                 .keyboardType(.URL)
                 .autocapitalization(.none)
                 #endif
                 .autocorrectionDisabled()
-            Button(lang.fetchButton) {
+            Button(String(localized: "Fetch")) {
                 Task { await fetchURL() }
             }
             .disabled(urlText.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -210,7 +209,7 @@ struct RecipeImportView: View {
     // MARK: - Photo Section
 
     private var photoInputSection: some View {
-        Section(lang.importFromPhoto) {
+        Section(String(localized: "From Photo")) {
             // Selected image preview + Analyze button
             if let img = selectedImage {
                 HStack(spacing: 12) {
@@ -220,12 +219,12 @@ struct RecipeImportView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                     Spacer()
                     if #available(iOS 26, macOS 26, *) {
-                        Button(lang.analyzeButton) {
+                        Button(String(localized: "Analyze")) {
                             Task { await analyzeImage(img) }
                         }
                         .buttonStyle(.borderedProminent)
                     } else {
-                        Text(lang.aiRequiresiOS26)
+                        Text(String(localized: "Photo analysis requires iOS 26 or later. Update your device to use this feature."))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.trailing)
@@ -240,16 +239,16 @@ struct RecipeImportView: View {
                 Button {
                     showCamera = true
                 } label: {
-                    Label(lang.takePhoto, systemImage: "camera")
+                    Label(String(localized: "Take Photo"), systemImage: "camera")
                 }
             }
             // Photo library via PhotosPicker
             PhotosPicker(selection: $photoPickerItem, matching: .images) {
-                Label(lang.choosePhoto, systemImage: "photo.on.rectangle")
+                Label(String(localized: "Choose Image"), systemImage: "photo.on.rectangle")
             }
             #else
             // macOS: file picker
-            Button(lang.choosePhoto) {
+            Button(String(localized: "Choose Image")) {
                 showFilePicker = true
             }
             #endif
@@ -259,12 +258,12 @@ struct RecipeImportView: View {
     // MARK: - Text paste Section
 
     private var textInputSection: some View {
-        Section(lang.importFromText) {
+        Section(String(localized: "Paste Text")) {
             ZStack(alignment: .topLeading) {
                 TextEditor(text: $pastedText)
                     .frame(minHeight: 160)
                 if pastedText.isEmpty {
-                    Text(lang.textPlaceholder)
+                    Text(String(localized: "Paste recipe text here…"))
                         .foregroundStyle(.tertiary)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 9)
@@ -272,12 +271,12 @@ struct RecipeImportView: View {
                 }
             }
             if #available(iOS 26, macOS 26, *) {
-                Button(lang.analyzeButton) {
+                Button(String(localized: "Analyze")) {
                     Task { await analyzeText() }
                 }
                 .disabled(pastedText.trimmingCharacters(in: .whitespaces).isEmpty)
             } else {
-                Text(lang.aiRequiresiOS26)
+                Text(String(localized: "Photo analysis requires iOS 26 or later. Update your device to use this feature."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -287,16 +286,16 @@ struct RecipeImportView: View {
     // MARK: - Generate Recipe Section
 
     private var generateRecipeSection: some View {
-        Section(lang.generateRecipe) {
-            TextField(lang.dishNamePlaceholder, text: $dishNameText)
+        Section(String(localized: "Generate")) {
+            TextField(String(localized: "Enter dish name…"), text: $dishNameText)
                 .autocorrectionDisabled()
             if #available(iOS 26, macOS 26, *) {
-                Button(lang.generateRecipe) {
+                Button(String(localized: "Generate")) {
                     Task { await generateRecipe() }
                 }
                 .disabled(dishNameText.trimmingCharacters(in: .whitespaces).isEmpty)
             } else {
-                Text(lang.aiRequiresiOS26)
+                Text(String(localized: "Photo analysis requires iOS 26 or later. Update your device to use this feature."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -307,37 +306,37 @@ struct RecipeImportView: View {
 
     private var previewSection: some View {
         Group {
-            Section(lang.recipeName) {
-                TextField(lang.recipeName, text: $editedName)
+            Section(String(localized: "Recipe Name")) {
+                TextField(String(localized: "Recipe Name"), text: $editedName)
             }
 
-            Section(lang.prepTime) {
+            Section(String(localized: "Preparation Time")) {
                 Stepper(value: $editedPrepHours, in: 0...24) {
-                    Text("\(editedPrepHours) \(lang.hoursLabel)")
+                    Text("\(editedPrepHours) \(String(localized: "Hours"))")
                 }
                 Stepper(value: $editedPrepMinutes, in: 0...59, step: 5) {
-                    Text("\(editedPrepMinutes) \(lang.minutesLabel)")
+                    Text("\(editedPrepMinutes) \(String(localized: "Minutes"))")
                 }
             }
 
-            Section(lang.ingredientsTitle) {
+            Section(String(localized: "Ingredients")) {
                 ForEach($editedIngredients, id: \.name) { $ing in
                     HStack(spacing: 6) {
                         TextField("1", value: $ing.amount, format: .number)
                             .frame(width: 44)
                             .multilineTextAlignment(.trailing)
-                        TextField(lang.unitLabel, text: $ing.unit)
+                        TextField(String(localized: "Unit"), text: $ing.unit)
                             .frame(width: 52)
-                        TextField(lang.nameLabel, text: $ing.name)
+                        TextField(String(localized: "Name"), text: $ing.name)
                     }
                 }
                 .onDelete { editedIngredients.remove(atOffsets: $0) }
-                Button(lang.addIngredient) {
+                Button(String(localized: "Add Ingredient")) {
                     editedIngredients.append(ImportedIngredientData(name: "", amount: 1, unit: ""))
                 }
             }
 
-            Section(lang.preparation) {
+            Section(String(localized: "Preparation")) {
                 TextEditor(text: $editedInstructions)
                     .frame(minHeight: 120)
             }
@@ -392,7 +391,7 @@ struct RecipeImportView: View {
     // MARK: - Fetch / Analyze
 
     private func fetchURL() async {
-        loadState = .loading(lang.fetchingURL)
+        loadState = .loading(String(localized: "Fetching page…"))
         do {
             let parsed = try await RecipeImportService.importFromURL(urlText)
             loadState = .success(parsed)
@@ -405,7 +404,7 @@ struct RecipeImportView: View {
     }
 
     private func analyzeText() async {
-        loadState = .loading(lang.analyzingRecipe)
+        loadState = .loading(String(localized: "Analyzing recipe…"))
         do {
             let parsed = try await RecipeImportService.importFromText(pastedText)
             loadState = .success(parsed)
@@ -418,7 +417,7 @@ struct RecipeImportView: View {
     private func generateRecipe() async {
         let dish = dishNameText.trimmingCharacters(in: .whitespaces)
         guard !dish.isEmpty else { return }
-        loadState = .loading(lang.generatingRecipe)
+        loadState = .loading(String(localized: "Generating recipe…"))
         do {
             let parsed = try await RecipeImportService.generateRecipeFromDish(dish)
             loadState = .success(parsed)
@@ -429,7 +428,7 @@ struct RecipeImportView: View {
     }
 
     private func analyzeImage(_ image: CGImage) async {
-        loadState = .loading(lang.analyzingRecipe)
+        loadState = .loading(String(localized: "Analyzing recipe…"))
         do {
             let parsed = try await RecipeImportService.importFromImage(image)
             loadState = .success(parsed)

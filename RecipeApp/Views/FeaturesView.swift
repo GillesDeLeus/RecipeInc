@@ -4,48 +4,47 @@ struct FeaturesView: View {
 
     @Environment(AppSettings.self) private var appSettings
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         @Bindable var settings = appSettings
         List {
             featureRow(
                 isOn: $settings.featureShopping,
-                label: lang.featureShoppingLabel,
-                description: lang.featureShoppingDesc,
+                label: String(localized: "Shopping List"),
+                description: String(localized: "Manually add items and generate lists from your meal plan."),
                 icon: "checklist",
                 color: .teal
             )
             featureRow(
                 isOn: $settings.featureStorage,
-                label: lang.featureStorageLabel,
-                description: lang.featureStorageDesc,
+                label: String(localized: "Storage"),
+                description: String(localized: "Track ingredients you have at home."),
                 icon: "cart",
                 color: .green
             )
             featureRow(
                 isOn: $settings.featureCalendar,
-                label: lang.featureCalendarLabel,
-                description: lang.featureCalendarDesc,
+                label: String(localized: "Meal Calendar"),
+                description: String(localized: "Plan meals and generate shopping lists."),
                 icon: "calendar",
                 color: .blue
             )
             featureRow(
                 isOn: $settings.featureAIImport,
-                label: lang.featureAILabel,
-                description: lang.featureAIDesc,
+                label: String(localized: "AI Recipe Import"),
+                description: String(localized: "Import recipes from photos or URLs using on-device AI."),
                 icon: "sparkles",
                 color: .purple
             )
             featureRow(
                 isOn: $settings.featureNutrition,
-                label: lang.featureNutritionLabel,
-                description: lang.featureNutritionDesc,
+                label: String(localized: "Nutrition"),
+                description: String(localized: "Show calorie and nutrient data per recipe."),
                 icon: "chart.bar",
                 color: .orange
             )
         }
-        .navigationTitle(lang.featuresTitle)
+        .navigationTitle(String(localized: "Features"))
         .navigationTitleDisplayMode(.inline)
     }
 

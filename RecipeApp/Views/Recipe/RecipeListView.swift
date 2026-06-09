@@ -17,7 +17,6 @@ struct RecipeListView: View {
 
     @State private var vm = RecipeListViewModel()
 
-    private var lang: AppLanguage { appSettings.language }
 
     private var filtered: [Recipe] {
         vm.filtered(recipes: recipes, storageItems: allStorageItems)
@@ -44,8 +43,8 @@ struct RecipeListView: View {
                     if recipes.isEmpty { emptyState } else { list }
                 }
             }
-            .navigationTitle(lang.tabRecipes)
-            .searchable(text: $vm.searchText, prompt: lang.searchRecipe)
+            .navigationTitle(String(localized: "Recipes"))
+            .searchable(text: $vm.searchText, prompt: String(localized: "Search recipe…"))
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Menu {
@@ -63,24 +62,24 @@ struct RecipeListView: View {
                             }
                         }
                     } label: {
-                        Label(lang.sortLabel, systemImage: "arrow.up.arrow.down")
+                        Label(String(localized: "Sort"), systemImage: "arrow.up.arrow.down")
                     }
                     Button { vm.showFilterPanel = true } label: {
-                        Label(lang.filterTitle, systemImage: vm.isFiltering
+                        Label(String(localized: "Filter"), systemImage: vm.isFiltering
                               ? "line.3.horizontal.decrease.circle.fill"
                               : "line.3.horizontal.decrease.circle")
                     }
                     Menu {
                         Button { vm.showAddSheet = true } label: {
-                            Label(lang.newRecipe, systemImage: "square.and.pencil")
+                            Label(String(localized: "New Recipe"), systemImage: "square.and.pencil")
                         }
                         if appSettings.featureAIImport {
                             Button { vm.showImportSheet = true } label: {
-                                Label(lang.importRecipeBtn, systemImage: "square.and.arrow.down")
+                                Label(String(localized: "Import Recipe"), systemImage: "square.and.arrow.down")
                             }
                         }
                     } label: {
-                        Label(lang.newRecipe, systemImage: "plus")
+                        Label(String(localized: "New Recipe"), systemImage: "plus")
                     }
                 }
             }
@@ -119,11 +118,11 @@ struct RecipeListView: View {
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label(lang.noRecipes, systemImage: "fork.knife")
+            Label(String(localized: "No Recipes"), systemImage: "fork.knife")
         } description: {
-            Text(lang.addFirstRecipe)
+            Text(String(localized: "Add your first recipe with the + button."))
         } actions: {
-            Button(lang.addRecipeBtn) { vm.showAddSheet = true }
+            Button(String(localized: "Add Recipe")) { vm.showAddSheet = true }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -132,19 +131,19 @@ struct RecipeListView: View {
 
     private func sortLabel(for order: RecipeSortOrder) -> String {
         switch order {
-        case .nameAsc:  return lang.sortByNameAZ
-        case .nameDesc: return lang.sortByNameZA
-        case .prepAsc:  return lang.sortByPrepAsc
-        case .prepDesc: return lang.sortByPrepDesc
-        case .newest:   return lang.sortNewest
-        case .oldest:   return lang.sortOldest
+        case .nameAsc:  return String(localized: "Name A–Z")
+        case .nameDesc: return String(localized: "Name Z–A")
+        case .prepAsc:  return String(localized: "Quickest First")
+        case .prepDesc: return String(localized: "Longest First")
+        case .newest:   return String(localized: "Newest First")
+        case .oldest:   return String(localized: "Oldest First")
         }
     }
 
     private func delete(at offsets: IndexSet) {
         let toDelete = offsets.map { filtered[$0] }
         for recipe in toDelete {
-            vm.delete(recipe: recipe, in: modelContext, lang: lang)
+            vm.delete(recipe: recipe, in: modelContext)
         }
     }
 }
@@ -158,7 +157,6 @@ private struct RecipeRowView: View {
     let inStockIDs: Set<PersistentIdentifier>
     let hasStorageData: Bool
 
-    private var lang: AppLanguage { appSettings.language }
 
     private var stockCoverage: (inStock: Int, total: Int) {
         let total = recipe.recipeIngredients.count
@@ -186,8 +184,8 @@ private struct RecipeRowView: View {
             }
 
             HStack(spacing: 12) {
-                Label(lang.formattedPrepTime(recipe.prepTimeMinutes), systemImage: "clock")
-                Label(lang.ingredientCount(recipe.recipeIngredients.count), systemImage: "list.bullet")
+                Label(TimeFormat.prepTime(recipe.prepTimeMinutes), systemImage: "clock")
+                Label(String(localized: "\(recipe.recipeIngredients.count) ingredients"), systemImage: "list.bullet")
                 stockBadge
             }
             .font(.caption)
@@ -231,10 +229,10 @@ private struct RecipeRowView: View {
             if coverage.total > 0 {
                 let missing = coverage.total - coverage.inStock
                 if missing == 0 {
-                    Label(lang.allInStock, systemImage: "checkmark.circle.fill")
+                    Label(String(localized: "All in stock"), systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                 } else if missing <= 2 {
-                    Label(lang.missingCount(missing), systemImage: "cart.badge.minus")
+                    Label(String(localized: "Missing \(missing)"), systemImage: "cart.badge.minus")
                         .foregroundStyle(.orange)
                 }
             }
@@ -259,28 +257,27 @@ private struct RecipeFilterView: View {
     @State private var showCategoryPicker = false
     @State private var showTagPicker = false
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         NavigationStack {
             Form {
                 // ── What Can I Cook? ───────────────────────────────
-                Section(lang.whatCanICook) {
-                    stockModeRow(.all,           label: lang.stockModeAll,      icon: "line.3.horizontal.decrease")
-                    stockModeRow(.canCook,        label: lang.stockModeCanCook,  icon: "checkmark.circle.fill",   color: .green)
-                    stockModeRow(.almostCanCook,  label: lang.stockModeAlmost,   icon: "cart.badge.minus",        color: .orange)
+                Section(String(localized: "What Can I Cook?")) {
+                    stockModeRow(.all,           label: String(localized: "All Recipes"),      icon: "line.3.horizontal.decrease")
+                    stockModeRow(.canCook,        label: String(localized: "Can Cook Now"),  icon: "checkmark.circle.fill",   color: .green)
+                    stockModeRow(.almostCanCook,  label: String(localized: "Almost Ready"),   icon: "cart.badge.minus",        color: .orange)
                 }
 
                 // ── Favourites ────────────────────────────────────
                 Section {
-                    Toggle(lang.favoritesOnly, isOn: $filter.favoritesOnly)
+                    Toggle(String(localized: "Favorites only"), isOn: $filter.favoritesOnly)
                 }
 
                 // ── Rating ────────────────────────────────────────
-                Section(lang.filterByRating) {
+                Section(String(localized: "Minimum Rating")) {
                     Button { filter.minRating = 0 } label: {
                         HStack {
-                            Text(lang.ratingAny).foregroundStyle(.primary)
+                            Text(String(localized: "Any")).foregroundStyle(.primary)
                             Spacer()
                             if filter.minRating == 0 {
                                 Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
@@ -303,16 +300,16 @@ private struct RecipeFilterView: View {
                 }
 
                 // ── Prep time ─────────────────────────────────────
-                Section(lang.prepTimeRange) {
+                Section(String(localized: "Preparation Time")) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(lang.minimumLabel(lang.formattedFilterTime(filter.minMinutes))).font(.subheadline)
+                        Text(String(localized: "Minimum: \(TimeFormat.filterTime(filter.minMinutes))")).font(.subheadline)
                         Slider(value: $filter.minMinutes, in: 0...240, step: 5)
                             .onChange(of: filter.minMinutes) { _, val in
                                 if val > filter.maxMinutes { filter.maxMinutes = val }
                             }
                     }
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(lang.maximumLabel(lang.formattedFilterTime(filter.maxMinutes, isMax: true))).font(.subheadline)
+                        Text(String(localized: "Maximum: \(TimeFormat.filterTime(filter.maxMinutes, isMax: true))")).font(.subheadline)
                         Slider(value: $filter.maxMinutes, in: 0...240, step: 5)
                             .onChange(of: filter.maxMinutes) { _, val in
                                 if val < filter.minMinutes { filter.minMinutes = val }
@@ -321,7 +318,7 @@ private struct RecipeFilterView: View {
                 }
 
                 // ── Categories ────────────────────────────────────
-                Section(lang.filterByCategory) {
+                Section(String(localized: "Category")) {
                     ForEach(allCategories.filter { filter.categoryIDs.contains($0.persistentModelID) }) { cat in
                         HStack {
                             Text(cat.name)
@@ -333,12 +330,12 @@ private struct RecipeFilterView: View {
                         }
                     }
                     Button { showCategoryPicker = true } label: {
-                        Label(lang.filterByCategory, systemImage: "plus.circle")
+                        Label(String(localized: "Category"), systemImage: "plus.circle")
                     }
                 }
 
                 // ── Tags ──────────────────────────────────────────
-                Section(lang.filterByTags) {
+                Section(String(localized: "Tags")) {
                     ForEach(allTags.filter { filter.tagIDs.contains($0.persistentModelID) }) { tag in
                         HStack(spacing: 10) {
                             Circle().fill(Color(hex: tag.colorHex)).frame(width: 10, height: 10)
@@ -351,12 +348,12 @@ private struct RecipeFilterView: View {
                         }
                     }
                     Button { showTagPicker = true } label: {
-                        Label(lang.filterByTags, systemImage: "plus.circle")
+                        Label(String(localized: "Tags"), systemImage: "plus.circle")
                     }
                 }
 
                 // ── Included ingredients ──────────────────────────
-                Section(lang.includedIngredients) {
+                Section(String(localized: "Included Ingredients")) {
                     ForEach(allIngredients.filter { filter.includedIngredientIDs.contains($0.persistentModelID) }) { ingredient in
                         HStack {
                             Text(ingredient.name)
@@ -370,12 +367,12 @@ private struct RecipeFilterView: View {
                         }
                     }
                     Button { showIncludedPicker = true } label: {
-                        Label(lang.addIngredient, systemImage: "plus.circle")
+                        Label(String(localized: "Add Ingredient"), systemImage: "plus.circle")
                     }
                 }
 
                 // ── Excluded ingredients ──────────────────────────
-                Section(lang.excludedIngredients) {
+                Section(String(localized: "Excluded Ingredients")) {
                     ForEach(allIngredients.filter { filter.excludedIngredientIDs.contains($0.persistentModelID) }) { ingredient in
                         HStack {
                             Text(ingredient.name)
@@ -389,19 +386,19 @@ private struct RecipeFilterView: View {
                         }
                     }
                     Button { showExcludedPicker = true } label: {
-                        Label(lang.addIngredient, systemImage: "plus.circle")
+                        Label(String(localized: "Add Ingredient"), systemImage: "plus.circle")
                     }
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(lang.filterTitle)
+            .navigationTitle(String(localized: "Filter"))
             .navigationTitleDisplayMode(.inline)
             .navigationDestination(isPresented: $showIncludedPicker) {
                 IngredientPickerNavView(
                     allIngredients: allIngredients,
                     selectedIDs: $filter.includedIngredientIDs,
                     conflictIDs: $filter.excludedIngredientIDs,
-                    title: lang.includedIngredients
+                    title: String(localized: "Included Ingredients")
                 )
             }
             .navigationDestination(isPresented: $showExcludedPicker) {
@@ -409,29 +406,29 @@ private struct RecipeFilterView: View {
                     allIngredients: allIngredients,
                     selectedIDs: $filter.excludedIngredientIDs,
                     conflictIDs: $filter.includedIngredientIDs,
-                    title: lang.excludedIngredients
+                    title: String(localized: "Excluded Ingredients")
                 )
             }
             .navigationDestination(isPresented: $showCategoryPicker) {
                 CategoryPickerNavView(
                     allCategories: allCategories,
                     selectedIDs: $filter.categoryIDs,
-                    title: lang.filterByCategory
+                    title: String(localized: "Category")
                 )
             }
             .navigationDestination(isPresented: $showTagPicker) {
                 TagPickerNavView(
                     allTags: allTags,
                     selectedIDs: $filter.tagIDs,
-                    title: lang.filterByTags
+                    title: String(localized: "Tags")
                 )
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.reset) { filter.reset() }
+                    Button(String(localized: "Reset")) { filter.reset() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.done) { dismiss() }
+                    Button(String(localized: "Done")) { dismiss() }
                 }
             }
         }
@@ -464,7 +461,6 @@ private struct CategoryPickerNavView: View {
 
     @State private var searchText = ""
 
-    private var lang: AppLanguage { appSettings.language }
 
     private var filtered: [RecipeCategory] {
         guard !searchText.isEmpty else { return allCategories }
@@ -486,7 +482,7 @@ private struct CategoryPickerNavView: View {
                 }
             }
         }
-        .searchable(text: $searchText, prompt: lang.searchCategory)
+        .searchable(text: $searchText, prompt: String(localized: "Search category…"))
         .navigationTitle(title)
         .navigationTitleDisplayMode(.inline)
     }
@@ -504,7 +500,6 @@ private struct TagPickerNavView: View {
 
     @State private var searchText = ""
 
-    private var lang: AppLanguage { appSettings.language }
 
     private var filtered: [RecipeTag] {
         guard !searchText.isEmpty else { return allTags }
@@ -527,7 +522,7 @@ private struct TagPickerNavView: View {
                 }
             }
         }
-        .searchable(text: $searchText, prompt: lang.searchTag)
+        .searchable(text: $searchText, prompt: String(localized: "Search tag…"))
         .navigationTitle(title)
         .navigationTitleDisplayMode(.inline)
     }
@@ -546,7 +541,6 @@ private struct IngredientPickerNavView: View {
 
     @State private var searchText = ""
 
-    private var lang: AppLanguage { appSettings.language }
 
     private var filtered: [Ingredient] {
         guard !searchText.isEmpty else { return allIngredients }
@@ -557,8 +551,8 @@ private struct IngredientPickerNavView: View {
         Group {
             if allIngredients.isEmpty {
                 ContentUnavailableView {
-                    Label(lang.noIngredientsTitle, systemImage: "carrot")
-                } description: { Text(lang.noIngredientsHint) }
+                    Label(String(localized: "No Ingredients"), systemImage: "carrot")
+                } description: { Text(String(localized: "First add ingredients via the Ingredients tab.")) }
             } else {
                 List(filtered) { ingredient in
                     Button {
@@ -582,7 +576,7 @@ private struct IngredientPickerNavView: View {
                         }
                     }
                 }
-                .searchable(text: $searchText, prompt: lang.searchIngredient)
+                .searchable(text: $searchText, prompt: String(localized: "Search ingredient…"))
             }
         }
         .navigationTitle(title)

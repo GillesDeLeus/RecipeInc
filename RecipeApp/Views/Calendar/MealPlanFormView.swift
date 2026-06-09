@@ -14,7 +14,6 @@ struct MealPlanFormView: View {
     var initialDate: Date = Date()
 
     private var isEditing: Bool { existingMealPlan != nil }
-    private var lang: AppLanguage { appSettings.language }
 
     // MARK: - Form state (initialised in init)
 
@@ -62,18 +61,18 @@ struct MealPlanFormView: View {
         NavigationStack {
             Form {
                 // ── Date ─────────────────────────────────────────
-                Section(lang.dateLabel) {
-                    DatePicker(lang.dateLabel,
+                Section(String(localized: "Date")) {
+                    DatePicker(String(localized: "Date"),
                                selection: $selectedDate,
                                displayedComponents: .date)
                     .labelsHidden()
                 }
 
                 // ── Meal type ─────────────────────────────────────
-                Section(lang.mealTypeLabel) {
-                    Picker(lang.mealTypeLabel, selection: $mealType) {
+                Section(String(localized: "Meal Type")) {
+                    Picker(String(localized: "Meal Type"), selection: $mealType) {
                         ForEach(MealType.allCases, id: \.self) { type in
-                            Label(type.localizedName(in: lang), systemImage: type.icon)
+                            Label(type.localizedName, systemImage: type.icon)
                                 .tag(type)
                         }
                     }
@@ -81,13 +80,13 @@ struct MealPlanFormView: View {
                 }
 
                 // ── Recipe ────────────────────────────────────────
-                Section(lang.recipeLabel) {
-                    Toggle(lang.customMeal, isOn: $useCustomName)
+                Section(String(localized: "Recipe")) {
+                    Toggle(String(localized: "Custom Meal"), isOn: $useCustomName)
                     if useCustomName {
-                        TextField(lang.mealName, text: $customName)
+                        TextField(String(localized: "Meal Name"), text: $customName)
                     } else {
-                        Picker(lang.recipeLabel, selection: $selectedRecipe) {
-                            Text(lang.noCategoryOption).tag(nil as Recipe?)
+                        Picker(String(localized: "Recipe"), selection: $selectedRecipe) {
+                            Text(String(localized: "None")).tag(nil as Recipe?)
                             ForEach(allRecipes) { recipe in
                                 Text(recipe.name).tag(recipe as Recipe?)
                             }
@@ -96,10 +95,10 @@ struct MealPlanFormView: View {
                 }
 
                 // ── Portions ──────────────────────────────────────
-                Section(lang.servingsLabel) {
+                Section(String(localized: "Servings")) {
                     Stepper(value: $portions, in: 1...20) {
                         HStack {
-                            Text(lang.servingsLabel)
+                            Text(String(localized: "Servings"))
                             Spacer()
                             Text("\(portions)").foregroundStyle(.secondary)
                         }
@@ -107,20 +106,20 @@ struct MealPlanFormView: View {
                 }
 
                 // ── Notes ─────────────────────────────────────────
-                Section(lang.notesLabel) {
+                Section(String(localized: "Notes")) {
                     TextEditor(text: $notes)
                         .frame(minHeight: 80)
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(isEditing ? lang.editMeal : lang.newMeal)
+            .navigationTitle(isEditing ? String(localized: "Edit Meal") : String(localized: "New Meal"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isEditing ? lang.save : lang.addItem) {
+                    Button(isEditing ? String(localized: "Save") : String(localized: "Add")) {
                         save(); dismiss()
                     }
                     .disabled(!isValid)

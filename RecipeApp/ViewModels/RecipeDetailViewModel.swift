@@ -121,9 +121,9 @@ final class RecipeDetailViewModel {
 
     // MARK: - Share text
 
-    func shareText(lang: AppLanguage) -> String {
+    func shareText() -> String {
         var lines: [String] = [recipe.name, ""]
-        lines.append(lang.formattedPrepTime(recipe.prepTimeMinutes))
+        lines.append(TimeFormat.prepTime(recipe.prepTimeMinutes))
 
         if let cat = recipe.category { lines.append(cat.name) }
 
@@ -134,7 +134,7 @@ final class RecipeDetailViewModel {
 
         if !recipe.recipeIngredients.isEmpty {
             lines.append("")
-            lines.append(lang.ingredientsTitle + ":")
+            lines.append(String(localized: "Ingredients") + ":")
             let sorted = recipe.recipeIngredients
                 .sorted { ($0.ingredient?.name ?? "") < ($1.ingredient?.name ?? "") }
             for ri in sorted {
@@ -152,7 +152,7 @@ final class RecipeDetailViewModel {
         let instructions = recipe.instructions.trimmingCharacters(in: .whitespacesAndNewlines)
         if !instructions.isEmpty {
             lines.append("")
-            lines.append(lang.preparation + ":")
+            lines.append(String(localized: "Preparation") + ":")
             lines.append(instructions)
         }
 
@@ -161,9 +161,9 @@ final class RecipeDetailViewModel {
 
     // MARK: - Duplication
 
-    func duplicateRecipe(in context: ModelContext, lang: AppLanguage) {
+    func duplicateRecipe(in context: ModelContext) {
         let copy = Recipe(
-            name: lang.duplicateRecipeName(recipe.name),
+            name: String(localized: "Copy of \(recipe.name)"),
             instructions: recipe.instructions,
             prepTimeMinutes: recipe.prepTimeMinutes
         )
@@ -181,7 +181,7 @@ final class RecipeDetailViewModel {
 
     // MARK: - Deletion
 
-    func requestDelete(in context: ModelContext, lang: AppLanguage) {
+    func requestDelete(in context: ModelContext) {
         let today = Calendar.current.startOfDay(for: Date())
         let plans = mealPlansForThisRecipe(in: context)
         let future = plans.filter { $0.date >= today }

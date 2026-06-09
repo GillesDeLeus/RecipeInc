@@ -142,14 +142,14 @@ final class RecipeListViewModel {
         return (try? context.fetch(descriptor)) ?? []
     }
 
-    func delete(recipe: Recipe, in context: ModelContext, lang: AppLanguage) {
+    func delete(recipe: Recipe, in context: ModelContext) {
         let today = Calendar.current.startOfDay(for: Date())
         let plans = mealPlans(for: recipe, in: context)
         let futurePlans = plans.filter { $0.date >= today }
         if !futurePlans.isEmpty {
             deletionAlert = DeletionAlert(
-                title: lang.recipeFutureScheduledTitle,
-                message: lang.recipeFutureScheduledMessage(recipe.name, futurePlans.count)
+                title: String(localized: "Recipe Is Scheduled"),
+                message: String(localized: "\"\(recipe.name)\" is planned \(futurePlans.count) times in the future. Remove it from the calendar first.")
             )
         } else {
             for plan in plans where plan.date < today { context.delete(plan) }

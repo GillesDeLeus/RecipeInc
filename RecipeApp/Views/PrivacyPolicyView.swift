@@ -2,28 +2,24 @@ import SwiftUI
 
 struct PrivacyPolicyView: View {
 
-    @Environment(AppSettings.self) private var appSettings
-
-    private var lang: AppLanguage { appSettings.language }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 // Header
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(lang.privacyPolicyTitle)
+                    Text(String(localized: "Privacy Policy"))
                         .font(.largeTitle).fontWeight(.bold)
-                    Text(lang.privacyPolicyEffectiveDate)
+                    Text(String(localized: "Effective date: May 2026"))
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
 
-                ForEach(sections(for: lang), id: \.title) { section in
+                ForEach(sections, id: \.title) { section in
                     PolicySectionView(title: section.title, content: section.content)
                 }
             }
             .padding(24)
         }
-        .navigationTitle(lang.privacyPolicyTitle)
+        .navigationTitle(String(localized: "Privacy Policy"))
         .navigationTitleDisplayMode(.inline)
     }
 
@@ -34,8 +30,9 @@ struct PrivacyPolicyView: View {
         let content: String
     }
 
-    private func sections(for lang: AppLanguage) -> [PolicySection] {
-        lang == .dutch ? dutchSections : englishSections
+    // Prose documents aren't catalog material — pick the section set by locale.
+    private var sections: [PolicySection] {
+        Locale.current.language.languageCode?.identifier == "nl" ? dutchSections : englishSections
     }
 
     // MARK: English

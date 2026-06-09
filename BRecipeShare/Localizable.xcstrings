@@ -1,0 +1,39 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Open recipeInc to review and import.": {
+      "extractionState": "manual",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open recipeInc om het te bekijken en te importeren."
+          }
+        }
+      }
+    },
+    "Recipe saved!": {
+      "extractionState": "manual",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recept opgeslagen!"
+          }
+        }
+      }
+    },
+    "Saving recipe…": {
+      "extractionState": "manual",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recept opslaan…"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

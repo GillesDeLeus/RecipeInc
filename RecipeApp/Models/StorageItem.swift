@@ -14,11 +14,11 @@ enum StorageLocation: String, Codable, CaseIterable {
         }
     }
 
-    func localizedName(in language: AppLanguage) -> String {
+    var localizedName: String {
         switch self {
-        case .freezer:      return language.freezerName
-        case .refrigerator: return language.refrigeratorName
-        case .foodCloset:   return language.foodClosetName
+        case .freezer:      return String(localized: "Freezer")
+        case .refrigerator: return String(localized: "Refrigerator")
+        case .foodCloset:   return String(localized: "Food Closet")
         }
     }
 }

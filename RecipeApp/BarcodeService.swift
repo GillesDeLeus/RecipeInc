@@ -23,7 +23,7 @@ struct BarcodeProduct {
 
 enum BarcodeServiceError: LocalizedError {
     case notFound
-    var errorDescription: String? { "Product not found in database." }
+    var errorDescription: String? { String(localized: "Product not found in database.") }
 }
 
 enum BarcodeService {

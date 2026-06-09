@@ -13,7 +13,6 @@ struct IngredientListView: View {
 
     @State private var vm = IngredientListViewModel()
 
-    private var lang: AppLanguage { appSettings.language }
 
     private var filtered: [Ingredient] { vm.filtered(ingredients: ingredients) }
 
@@ -34,8 +33,8 @@ struct IngredientListView: View {
                     }
                 }
             }
-            .navigationTitle(lang.tabIngredients)
-            .searchable(text: $vm.searchText, prompt: lang.searchIngredient)
+            .navigationTitle(String(localized: "Ingredients"))
+            .searchable(text: $vm.searchText, prompt: String(localized: "Search ingredient…"))
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Menu {
@@ -53,17 +52,17 @@ struct IngredientListView: View {
                             }
                         }
                     } label: {
-                        Label(lang.sortLabel, systemImage: "arrow.up.arrow.down")
+                        Label(String(localized: "Sort"), systemImage: "arrow.up.arrow.down")
                     }
 
                     Button { vm.showFilterSheet = true } label: {
-                        Label(lang.filterTitle, systemImage: vm.isFiltering
+                        Label(String(localized: "Filter"), systemImage: vm.isFiltering
                               ? "line.3.horizontal.decrease.circle.fill"
                               : "line.3.horizontal.decrease.circle")
                     }
 
                     Button { vm.showAddSheet = true } label: {
-                        Label(lang.addItem, systemImage: "plus")
+                        Label(String(localized: "Add"), systemImage: "plus")
                     }
                 }
             }
@@ -104,8 +103,8 @@ struct IngredientListView: View {
                                 .font(.body)
                                 .foregroundStyle(.primary)
                             Text(ingredient.unit.isEmpty
-                                 ? ingredient.shoppingCategory.localizedName(in: lang)
-                                 : "\(ingredient.unit) · \(ingredient.shoppingCategory.localizedName(in: lang))")
+                                 ? ingredient.shoppingCategory.localizedName
+                                 : "\(ingredient.unit) · \(ingredient.shoppingCategory.localizedName)")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -122,11 +121,11 @@ struct IngredientListView: View {
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label(lang.noIngredientsTitle, systemImage: "carrot")
+            Label(String(localized: "No Ingredients"), systemImage: "carrot")
         } description: {
-            Text(lang.addFirstIngredient)
+            Text(String(localized: "Add your first ingredient with the + button."))
         } actions: {
-            Button(lang.addIngredientBtn) { vm.showAddSheet = true }
+            Button(String(localized: "Add Ingredient")) { vm.showAddSheet = true }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -135,9 +134,9 @@ struct IngredientListView: View {
 
     private func sortLabel(for order: IngredientSortOrder) -> String {
         switch order {
-        case .nameAsc:    return lang.sortByNameAZ
-        case .nameDesc:   return lang.sortByNameZA
-        case .byCategory: return lang.sortByCategory
+        case .nameAsc:    return String(localized: "Name A–Z")
+        case .nameDesc:   return String(localized: "Name Z–A")
+        case .byCategory: return String(localized: "Category")
         }
     }
 
@@ -158,7 +157,7 @@ struct IngredientListView: View {
     private func delete(at offsets: IndexSet) {
         let toDelete = offsets.map { filtered[$0] }
         for ingredient in toDelete {
-            vm.delete(ingredient: ingredient, storageItems: allStorageItems, in: modelContext, lang: lang)
+            vm.delete(ingredient: ingredient, storageItems: allStorageItems, in: modelContext)
         }
     }
 }
@@ -171,12 +170,11 @@ private struct IngredientFilterView: View {
     @Environment(AppSettings.self) private var appSettings
     @Binding var selectedCategories: Set<ShoppingCategory>
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section(lang.shoppingCategoryLabel) {
+                Section(String(localized: "Category")) {
                     ForEach(ShoppingCategory.allCases) { category in
                         Button {
                             if selectedCategories.contains(category) {
@@ -189,7 +187,7 @@ private struct IngredientFilterView: View {
                                 Image(systemName: category.icon)
                                     .foregroundStyle(.secondary)
                                     .frame(width: 20)
-                                Text(category.localizedName(in: lang))
+                                Text(category.localizedName)
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 if selectedCategories.contains(category) {
@@ -202,14 +200,14 @@ private struct IngredientFilterView: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(lang.filterTitle)
+            .navigationTitle(String(localized: "Filter"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.reset) { selectedCategories = [] }
+                    Button(String(localized: "Reset")) { selectedCategories = [] }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.done) { dismiss() }
+                    Button(String(localized: "Done")) { dismiss() }
                 }
             }
         }

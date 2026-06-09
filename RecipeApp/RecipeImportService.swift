@@ -35,16 +35,16 @@ enum RecipeImportError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidURL:        return "The URL is not valid."
-        case .networkError(let e): return "Network error: \(e.localizedDescription)"
-        case .noRecipeFound:     return "No recipe data could be found on that page. Try pasting the URL of a recipe page directly."
-        case .ocrFailed:         return "Could not read text from the image."
-        case .aiNotEnabled:      return "Apple Intelligence is not enabled. Go to System Settings → Apple Intelligence & Siri and turn it on."
-        case .aiModelNotReady:   return "The Apple Intelligence model is still downloading. Try again in a few minutes."
-        case .aiUnavailable:     return "On-device AI is not available on this device or OS version."
-        case .aiError(let e):    return "AI parsing failed: \(e.localizedDescription)"
+        case .invalidURL:        return String(localized: "The URL is not valid.")
+        case .networkError(let e): return String(localized: "Network error: \(e.localizedDescription)")
+        case .noRecipeFound:     return String(localized: "No recipe data could be found on that page. Try pasting the URL of a recipe page directly.")
+        case .ocrFailed:         return String(localized: "Could not read text from the image.")
+        case .aiNotEnabled:      return String(localized: "Apple Intelligence is not enabled. Go to System Settings → Apple Intelligence & Siri and turn it on.")
+        case .aiModelNotReady:   return String(localized: "The Apple Intelligence model is still downloading. Try again in a few minutes.")
+        case .aiUnavailable:     return String(localized: "On-device AI is not available on this device or OS version.")
+        case .aiError(let e):    return String(localized: "AI parsing failed: \(e.localizedDescription)")
         case .socialMediaNotSupported:
-            return "The recipe couldn't be read from this post automatically. Copy the recipe text from the caption or description and use the Paste Text tab instead."
+            return String(localized: "The recipe couldn't be read from this post automatically. Copy the recipe text from the caption or description and use the Paste Text tab instead.")
         }
     }
 
@@ -392,7 +392,7 @@ enum RecipeImportService {
     }
 
     private static func mapSchemaRecipe(_ d: [String: Any]) -> ImportedRecipeData {
-        let name = d["name"] as? String ?? "Imported Recipe"
+        let name = d["name"] as? String ?? String(localized: "Imported Recipe")
 
         let timeStr = (d["totalTime"] as? String)
             ?? (d["cookTime"] as? String)

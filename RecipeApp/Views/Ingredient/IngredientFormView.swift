@@ -5,7 +5,6 @@ import SwiftData
 
 private struct NevoPickerSheet: View {
     let candidates: [(entry: NevoEntry, score: Double)]
-    let lang: AppLanguage
     let onSelect: (NevoEntry) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -36,11 +35,11 @@ private struct NevoPickerSheet: View {
                     }
                 }
             }
-            .navigationTitle(lang.lookupNutrition)
+            .navigationTitle(String(localized: "Look Up Nutrition"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
             }
         }
@@ -94,7 +93,6 @@ struct IngredientFormView: View {
     @State private var showNevoSheet                       = false
 
     private var isEditing: Bool { ingredient != nil }
-    private var lang: AppLanguage { appSettings.language }
 
     private let commonUnits = ["g", "kg", "ml", "cl", "l", "stuk", "el", "tl",
                                 "snuf", "takje", "blaadje", "teen"]
@@ -110,8 +108,8 @@ struct IngredientFormView: View {
         NavigationStack {
             Form {
                 // ── Name ─────────────────────────────────────────────────
-                Section(lang.nameLabel) {
-                    TextField(lang.namePlaceholder, text: $name)
+                Section(String(localized: "Name")) {
+                    TextField(String(localized: "e.g. flour, butter, milk…"), text: $name)
                         .autocorrectionDisabled()
                         .onChange(of: name) { updateNevoSuggestions() }
 
@@ -139,8 +137,8 @@ struct IngredientFormView: View {
                 }
 
                 // ── Unit ─────────────────────────────────────────────────
-                Section(lang.unitLabel) {
-                    TextField(lang.unitPlaceholder, text: $unit)
+                Section(String(localized: "Unit")) {
+                    TextField(String(localized: "e.g. g, ml, piece, tbsp…"), text: $unit)
                         .autocorrectionDisabled()
 
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -157,10 +155,10 @@ struct IngredientFormView: View {
                 }
 
                 // ── Shopping category ─────────────────────────────────────
-                Section(lang.shoppingCategoryLabel) {
-                    Picker(lang.shoppingCategoryLabel, selection: $shoppingCategory) {
+                Section(String(localized: "Category")) {
+                    Picker(String(localized: "Category"), selection: $shoppingCategory) {
                         ForEach(ShoppingCategory.allCases) { cat in
-                            Label(cat.localizedName(in: lang), systemImage: cat.icon).tag(cat)
+                            Label(cat.localizedName, systemImage: cat.icon).tag(cat)
                         }
                     }
                     .pickerStyle(.menu)
@@ -169,32 +167,32 @@ struct IngredientFormView: View {
                 // ── Macronutrients ────────────────────────────────────────
                 if appSettings.featureNutrition {
                     Section {
-                        nutritionInputRow(lang.nutritionCalories, text: $caloriesText, unit: "kcal")
-                        nutritionInputRow(lang.nutritionProtein,  text: $proteinText,  unit: "g")
-                        nutritionInputRow(lang.nutritionFat,      text: $fatText,      unit: "g")
-                        nutritionInputRow(lang.nutritionSatFat,   text: $satFatText,   unit: "g")
-                        nutritionInputRow(lang.nutritionCarbs,    text: $carbsText,    unit: "g")
-                        nutritionInputRow(lang.nutritionSugars,   text: $sugarsText,   unit: "g")
-                        nutritionInputRow(lang.nutritionFiber,    text: $fiberText,    unit: "g")
+                        nutritionInputRow(String(localized: "Calories"), text: $caloriesText, unit: "kcal")
+                        nutritionInputRow(String(localized: "Protein"),  text: $proteinText,  unit: "g")
+                        nutritionInputRow(String(localized: "Fat"),      text: $fatText,      unit: "g")
+                        nutritionInputRow(String(localized: "of which Saturated Fat"),   text: $satFatText,   unit: "g")
+                        nutritionInputRow(String(localized: "Carbs"),    text: $carbsText,    unit: "g")
+                        nutritionInputRow(String(localized: "of which Sugars"),   text: $sugarsText,   unit: "g")
+                        nutritionInputRow(String(localized: "Fiber"),    text: $fiberText,    unit: "g")
                     } header: {
-                        Text(lang.nutritionTitle + " (\(lang.nutritionPer100g))")
+                        Text(String(localized: "Nutrition") + " (\(String(localized: "per 100 g")))")
                     }
 
                     // ── Minerals ──────────────────────────────────────────
-                    Section(lang.nutritionMinerals) {
-                        nutritionInputRow(lang.nutritionSodium,    text: $sodiumText,    unit: "mg")
-                        nutritionInputRow(lang.nutritionPotassium, text: $potassiumText, unit: "mg")
-                        nutritionInputRow(lang.nutritionCalcium,   text: $calciumText,   unit: "mg")
-                        nutritionInputRow(lang.nutritionIron,      text: $ironText,      unit: "mg")
+                    Section(String(localized: "Minerals")) {
+                        nutritionInputRow(String(localized: "Sodium"),    text: $sodiumText,    unit: "mg")
+                        nutritionInputRow(String(localized: "Potassium"), text: $potassiumText, unit: "mg")
+                        nutritionInputRow(String(localized: "Calcium"),   text: $calciumText,   unit: "mg")
+                        nutritionInputRow(String(localized: "Iron"),      text: $ironText,      unit: "mg")
                     }
 
                     // ── Vitamins ──────────────────────────────────────────
                     Section {
-                        nutritionInputRow(lang.nutritionVitC, text: $vitCText, unit: "mg")
-                        nutritionInputRow(lang.nutritionVitD, text: $vitDText, unit: "µg")
+                        nutritionInputRow(String(localized: "Vitamin C"), text: $vitCText, unit: "mg")
+                        nutritionInputRow(String(localized: "Vitamin D"), text: $vitDText, unit: "µg")
 
                         Button { manualLookup() } label: {
-                            Label(lang.lookupNutrition, systemImage: "magnifyingglass")
+                            Label(String(localized: "Look Up Nutrition"), systemImage: "magnifyingglass")
                         }
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
 
@@ -202,21 +200,21 @@ struct IngredientFormView: View {
                             Text(error).font(.caption).foregroundStyle(.red)
                         }
                     } header: {
-                        Text(lang.nutritionVitamins)
+                        Text(String(localized: "Vitamins"))
                     } footer: {
-                        Text(lang.nutritionSource).font(.caption2)
+                        Text(String(localized: "Based on data from NEVO online version 2025/9.0, RIVM, Bilthoven")).font(.caption2)
                     }
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(isEditing ? lang.editIngredient : lang.newIngredient)
+            .navigationTitle(isEditing ? String(localized: "Edit Ingredient") : String(localized: "New Ingredient"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isEditing ? lang.save : lang.addItem) {
+                    Button(isEditing ? String(localized: "Save") : String(localized: "Add")) {
                         saveAndDismiss()
                     }
                     .disabled(!isValid)
@@ -242,7 +240,7 @@ struct IngredientFormView: View {
                 if let v = ingredient.vitDPer100g      { vitDText      = formatNutrition(v) }
             }
             .sheet(isPresented: $showNevoSheet) {
-                NevoPickerSheet(candidates: nevoSheetCandidates, lang: lang) { entry in
+                NevoPickerSheet(candidates: nevoSheetCandidates) { entry in
                     applyNevoEntry(entry)
                 }
                 .environment(appSettings)

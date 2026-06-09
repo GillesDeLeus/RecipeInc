@@ -9,7 +9,6 @@ struct PersistentShoppingListView: View {
 
     @State private var vm = ShoppingListViewModel()
 
-    private var lang: AppLanguage { appSettings.language }
 
     private var groupedItems: [(ShoppingCategory, [ShoppingListItem])] {
         vm.groupedItems(from: items, aisleOrder: appSettings.aisleOrder)
@@ -29,25 +28,25 @@ struct PersistentShoppingListView: View {
                     }
                 }
             }
-            .navigationTitle(lang.shoppingList)
+            .navigationTitle(String(localized: "Shopping List"))
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button { vm.showAddSheet = true } label: {
-                        Label(lang.addItem, systemImage: "plus")
+                        Label(String(localized: "Add"), systemImage: "plus")
                     }
                 }
                 ToolbarItemGroup(placement: .secondaryAction) {
                     Button {
                         vm.isGrouped.toggle()
                     } label: {
-                        Label(lang.groupByCategory,
+                        Label(String(localized: "Group by Category"),
                               systemImage: vm.isGrouped ? "rectangle.3.group.fill" : "rectangle.3.group")
                     }
                     if items.contains(where: { $0.isChecked }) {
                         Button(role: .destructive) {
                             vm.clearChecked(from: items, in: modelContext)
                         } label: {
-                            Label(lang.clearChecked, systemImage: "trash")
+                            Label(String(localized: "Clear Checked"), systemImage: "trash")
                         }
                     }
                 }
@@ -72,7 +71,7 @@ struct PersistentShoppingListView: View {
                         vm.deleteItems(catItems, at: offsets, in: modelContext)
                     }
                 } header: {
-                    Label(category.localizedName(in: lang), systemImage: category.icon)
+                    Label(category.localizedName, systemImage: category.icon)
                 }
             }
         }
@@ -91,11 +90,11 @@ struct PersistentShoppingListView: View {
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label(lang.shoppingList, systemImage: "checklist")
+            Label(String(localized: "Shopping List"), systemImage: "checklist")
         } description: {
-            Text(lang.myListEmptyHint)
+            Text(String(localized: "Add items manually or tap \"Add All to My List\" from a meal plan."))
         } actions: {
-            Button(lang.addShoppingItemTitle) { vm.showAddSheet = true }
+            Button(String(localized: "Add Item")) { vm.showAddSheet = true }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -141,7 +140,6 @@ private struct AddShoppingItemSheet: View {
     @State private var unit = ""
     @State private var category: ShoppingCategory = .other
 
-    private var lang: AppLanguage { appSettings.language }
 
     private var suggestions: [Ingredient] {
         guard !name.isEmpty else { return [] }
@@ -151,8 +149,8 @@ private struct AddShoppingItemSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(lang.nameLabel) {
-                    TextField(lang.namePlaceholder, text: $name)
+                Section(String(localized: "Name")) {
+                    TextField(String(localized: "e.g. flour, butter, milk…"), text: $name)
                         .autocorrectionDisabled()
 
                     ForEach(suggestions) { ingredient in
@@ -181,7 +179,7 @@ private struct AddShoppingItemSheet: View {
 
                 Section {
                     HStack {
-                        Text(lang.amountLabel)
+                        Text(String(localized: "Amount"))
                         Spacer()
                         TextField("1", text: $amountText)
                             .multilineTextAlignment(.trailing)
@@ -191,32 +189,32 @@ private struct AddShoppingItemSheet: View {
                             .frame(width: 80)
                     }
                     HStack {
-                        Text(lang.unitLabel)
+                        Text(String(localized: "Unit"))
                         Spacer()
-                        TextField(lang.unitLabel, text: $unit)
+                        TextField(String(localized: "Unit"), text: $unit)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 120)
                     }
                 }
 
-                Section(lang.shoppingCategoryLabel) {
-                    Picker(lang.shoppingCategoryLabel, selection: $category) {
+                Section(String(localized: "Category")) {
+                    Picker(String(localized: "Category"), selection: $category) {
                         ForEach(ShoppingCategory.allCases) { cat in
-                            Label(cat.localizedName(in: lang), systemImage: cat.icon).tag(cat)
+                            Label(cat.localizedName, systemImage: cat.icon).tag(cat)
                         }
                     }
                     .pickerStyle(.menu)
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(lang.addShoppingItemTitle)
+            .navigationTitle(String(localized: "Add Item"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.save) { save() }
+                    Button(String(localized: "Save")) { save() }
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }

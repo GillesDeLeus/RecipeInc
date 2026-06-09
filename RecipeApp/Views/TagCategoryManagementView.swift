@@ -12,7 +12,6 @@ struct CategoryManagementView: View {
     @State private var showAddAlert = false
     @State private var newName = ""
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         List {
@@ -21,7 +20,7 @@ struct CategoryManagementView: View {
                     Text(cat.name)
                     Spacer()
                     if !cat.isCustom {
-                        Text(lang.standardBadge)
+                        Text(String(localized: "Standard"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -33,25 +32,25 @@ struct CategoryManagementView: View {
                 }
             }
         }
-        .navigationTitle(lang.manageCategories)
+        .navigationTitle(String(localized: "Manage Categories"))
         .navigationTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { showAddAlert = true } label: {
-                    Label(lang.addItem, systemImage: "plus")
+                    Label(String(localized: "Add"), systemImage: "plus")
                 }
             }
         }
-        .alert(lang.newCategoryTitle, isPresented: $showAddAlert) {
-            TextField(lang.categoryNamePlaceholder, text: $newName)
-            Button(lang.addItem) {
+        .alert(String(localized: "New Category"), isPresented: $showAddAlert) {
+            TextField(String(localized: "Category name"), text: $newName)
+            Button(String(localized: "Add")) {
                 let trimmed = newName.trimmingCharacters(in: .whitespaces)
                 if !trimmed.isEmpty {
                     modelContext.insert(RecipeCategory(name: trimmed, isCustom: true))
                 }
                 newName = ""
             }
-            Button(lang.cancel, role: .cancel) { newName = "" }
+            Button(String(localized: "Cancel"), role: .cancel) { newName = "" }
         }
     }
 }
@@ -66,7 +65,6 @@ struct TagManagementView: View {
 
     @State private var showAddSheet = false
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         List {
@@ -78,7 +76,7 @@ struct TagManagementView: View {
                     Text(tag.name)
                     Spacer()
                     if !tag.isCustom {
-                        Text(lang.standardBadge)
+                        Text(String(localized: "Standard"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -90,12 +88,12 @@ struct TagManagementView: View {
                 }
             }
         }
-        .navigationTitle(lang.manageTags)
+        .navigationTitle(String(localized: "Manage Tags"))
         .navigationTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { showAddSheet = true } label: {
-                    Label(lang.addItem, systemImage: "plus")
+                    Label(String(localized: "Add"), systemImage: "plus")
                 }
             }
         }
@@ -116,15 +114,14 @@ private struct AddTagSheet: View {
     @State private var name = ""
     @State private var selectedColor = RecipeTag.presetColors[5]
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section(lang.nameLabel) {
-                    TextField(lang.tagNamePlaceholder, text: $name)
+                Section(String(localized: "Name")) {
+                    TextField(String(localized: "Tag name"), text: $name)
                 }
-                Section(lang.tagColor) {
+                Section(String(localized: "Color")) {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
                         ForEach(RecipeTag.presetColors, id: \.self) { hex in
                             Button {
@@ -146,14 +143,14 @@ private struct AddTagSheet: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(lang.newTagTitle)
+            .navigationTitle(String(localized: "New Tag"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.addItem) {
+                    Button(String(localized: "Add")) {
                         let trimmed = name.trimmingCharacters(in: .whitespaces)
                         if !trimmed.isEmpty {
                             modelContext.insert(RecipeTag(name: trimmed, colorHex: selectedColor, isCustom: true))

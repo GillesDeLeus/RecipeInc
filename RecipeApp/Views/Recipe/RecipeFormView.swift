@@ -12,7 +12,6 @@ struct RecipeFormView: View {
     var recipe: Recipe?
 
     private var isEditing: Bool { recipe != nil }
-    private var lang: AppLanguage { appSettings.language }
 
     // MARK: - Queries
 
@@ -46,7 +45,7 @@ struct RecipeFormView: View {
 
     private var selectedTagSummary: String {
         let selected = allTags.filter { selectedTagIDs.contains($0.persistentModelID) }
-        return selected.isEmpty ? lang.noCategoryOption : selected.map(\.name).joined(separator: ", ")
+        return selected.isEmpty ? String(localized: "None") : selected.map(\.name).joined(separator: ", ")
     }
 
     // MARK: - Body
@@ -81,49 +80,49 @@ struct RecipeFormView: View {
                         .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
                     }
                     PhotosPicker(selection: $pendingPhotos, maxSelectionCount: 10, matching: .images) {
-                        Label(lang.addPhotos, systemImage: "photo.badge.plus")
+                        Label(String(localized: "Add Photos"), systemImage: "photo.badge.plus")
                     }
-                } header: { Text(lang.photosLabel) }
+                } header: { Text(String(localized: "Photos")) }
 
                 // ── Basic info ────────────────────────────────────
-                Section(lang.nameLabel) {
-                    TextField(lang.recipeName, text: $name)
+                Section(String(localized: "Name")) {
+                    TextField(String(localized: "Recipe Name"), text: $name)
                         .onChange(of: name) { if name.count > 100 { name = String(name.prefix(100)) } }
                 }
 
-                Section(lang.prepTime) {
+                Section(String(localized: "Preparation Time")) {
                     Stepper(value: $prepHours, in: 0...24) {
                         HStack {
-                            Text(lang.hoursLabel); Spacer()
+                            Text(String(localized: "Hours")); Spacer()
                             Text("\(prepHours)").foregroundStyle(.secondary)
                         }
                     }
                     Stepper(value: $prepMinutes, in: 0...55, step: 5) {
                         HStack {
-                            Text(lang.minutesLabel); Spacer()
+                            Text(String(localized: "Minutes")); Spacer()
                             Text("\(prepMinutes)").foregroundStyle(.secondary)
                         }
                     }
                 }
 
                 // ── Category ──────────────────────────────────────
-                Section(lang.categoryLabel) {
-                    Picker(lang.categoryLabel, selection: $selectedCategory) {
-                        Text(lang.noCategoryOption).tag(nil as RecipeCategory?)
+                Section(String(localized: "Category")) {
+                    Picker(String(localized: "Category"), selection: $selectedCategory) {
+                        Text(String(localized: "None")).tag(nil as RecipeCategory?)
                         ForEach(allCategories) { cat in
                             Text(cat.name).tag(cat as RecipeCategory?)
                         }
                     }
                     Button { showAddCategoryAlert = true } label: {
-                        Label(lang.addNewCategory, systemImage: "plus.circle")
+                        Label(String(localized: "New Category…"), systemImage: "plus.circle")
                     }
                 }
 
                 // ── Tags ──────────────────────────────────────────
-                Section(lang.tagsLabel) {
+                Section(String(localized: "Tags")) {
                     Button { showTagPicker = true } label: {
                         HStack {
-                            Text(lang.tagsLabel)
+                            Text(String(localized: "Tags"))
                                 .foregroundStyle(.primary)
                             Spacer()
                             Text(selectedTagSummary)
@@ -136,7 +135,7 @@ struct RecipeFormView: View {
                         }
                     }
                     Button { showAddTagSheet = true } label: {
-                        Label(lang.addNewTag, systemImage: "plus.circle")
+                        Label(String(localized: "New Tag…"), systemImage: "plus.circle")
                     }
                 }
 
@@ -145,7 +144,7 @@ struct RecipeFormView: View {
                     ForEach($lines) { $line in IngredientLineRow(line: $line) }
                         .onDelete { offsets in lines.remove(atOffsets: offsets) }
                     Button { showIngredientPicker = true } label: {
-                        Label(lang.addIngredient, systemImage: "plus.circle.fill")
+                        Label(String(localized: "Add Ingredient"), systemImage: "plus.circle.fill")
                     }
                     .popover(isPresented: $showIngredientPicker) {
                         IngredientPickerView(
@@ -160,22 +159,22 @@ struct RecipeFormView: View {
                         .environment(appSettings)
                         .frame(minWidth: 280, minHeight: 380)
                     }
-                } header: { Text(lang.ingredientsPerServing) } footer: { Text(lang.amountsNote) }
+                } header: { Text(String(localized: "Ingredients (per serving)")) } footer: { Text(String(localized: "Amounts are for 1 serving.")) }
 
                 // ── Instructions ──────────────────────────────────
-                Section(lang.preparation) {
+                Section(String(localized: "Preparation")) {
                     TextEditor(text: $instructions).frame(minHeight: 160)
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(isEditing ? lang.editRecipe : lang.newRecipe)
+            .navigationTitle(isEditing ? String(localized: "Edit Recipe") : String(localized: "New Recipe"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isEditing ? lang.save : lang.addItem) { save(); dismiss() }
+                    Button(isEditing ? String(localized: "Save") : String(localized: "Add")) { save(); dismiss() }
                         .disabled(!isValid)
                 }
             }
@@ -196,14 +195,14 @@ struct RecipeFormView: View {
                     pendingPhotos = []
                 }
             }
-            .alert(lang.photoLoadErrorTitle, isPresented: $photoLoadFailed) {
-                Button(lang.ok, role: .cancel) {}
+            .alert(String(localized: "Photo Error"), isPresented: $photoLoadFailed) {
+                Button(String(localized: "OK"), role: .cancel) {}
             } message: {
-                Text(lang.photoLoadErrorMessage)
+                Text(String(localized: "One or more photos could not be loaded."))
             }
-            .alert(lang.newCategoryTitle, isPresented: $showAddCategoryAlert) {
-                TextField(lang.categoryNamePlaceholder, text: $newCategoryName)
-                Button(lang.addItem) {
+            .alert(String(localized: "New Category"), isPresented: $showAddCategoryAlert) {
+                TextField(String(localized: "Category name"), text: $newCategoryName)
+                Button(String(localized: "Add")) {
                     let trimmed = newCategoryName.trimmingCharacters(in: .whitespaces)
                     if !trimmed.isEmpty {
                         let cat = RecipeCategory(name: trimmed, isCustom: true)
@@ -212,7 +211,7 @@ struct RecipeFormView: View {
                     }
                     newCategoryName = ""
                 }
-                Button(lang.cancel, role: .cancel) { newCategoryName = "" }
+                Button(String(localized: "Cancel"), role: .cancel) { newCategoryName = "" }
             }
             .sheet(isPresented: $showTagPicker) {
                 TagPickerSheet(allTags: allTags, selectedTagIDs: $selectedTagIDs)
@@ -327,15 +326,14 @@ private struct TagPickerSheet: View {
     let allTags: [RecipeTag]
     @Binding var selectedTagIDs: Set<PersistentIdentifier>
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         NavigationStack {
             Group {
                 if allTags.isEmpty {
                     ContentUnavailableView {
-                        Label(lang.tagsLabel, systemImage: "tag")
-                    } description: { Text(lang.addNewTag) }
+                        Label(String(localized: "Tags"), systemImage: "tag")
+                    } description: { Text(String(localized: "New Tag…")) }
                 } else {
                     List(allTags) { tag in
                         Button {
@@ -361,11 +359,11 @@ private struct TagPickerSheet: View {
                     }
                 }
             }
-            .navigationTitle(lang.tagsLabel)
+            .navigationTitle(String(localized: "Tags"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.done) { dismiss() }
+                    Button(String(localized: "Done")) { dismiss() }
                 }
             }
         }
@@ -383,15 +381,14 @@ private struct InlineAddTagSheet: View {
     @State private var name = ""
     @State private var colorHex = RecipeTag.presetColors[5]
 
-    private var lang: AppLanguage { appSettings.language }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section(lang.nameLabel) {
-                    TextField(lang.tagNamePlaceholder, text: $name)
+                Section(String(localized: "Name")) {
+                    TextField(String(localized: "Tag name"), text: $name)
                 }
-                Section(lang.tagColor) {
+                Section(String(localized: "Color")) {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
                         ForEach(RecipeTag.presetColors, id: \.self) { hex in
                             Button { colorHex = hex } label: {
@@ -410,14 +407,14 @@ private struct InlineAddTagSheet: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(lang.newTagTitle)
+            .navigationTitle(String(localized: "New Tag"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.addItem) {
+                    Button(String(localized: "Add")) {
                         let trimmed = name.trimmingCharacters(in: .whitespaces)
                         if !trimmed.isEmpty {
                             let tag = RecipeTag(name: trimmed, colorHex: colorHex, isCustom: true)
@@ -475,7 +472,6 @@ private struct IngredientPickerView: View {
     @State private var searchText = ""
     @State private var showAddIngredientSheet = false
 
-    private var lang: AppLanguage { appSettings.language }
     private var filtered: [Ingredient] {
         guard !searchText.isEmpty else { return ingredients }
         return ingredients.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
@@ -486,8 +482,8 @@ private struct IngredientPickerView: View {
             Group {
                 if ingredients.isEmpty {
                     ContentUnavailableView {
-                        Label(lang.noIngredientsTitle, systemImage: "carrot")
-                    } description: { Text(lang.addFirstIngredient) }
+                        Label(String(localized: "No Ingredients"), systemImage: "carrot")
+                    } description: { Text(String(localized: "Add your first ingredient with the + button.")) }
                 } else {
                     List(filtered) { ingredient in
                         Button { onToggle(ingredient) } label: {
@@ -505,19 +501,19 @@ private struct IngredientPickerView: View {
                             }
                         }
                     }
-                    .searchable(text: $searchText, prompt: lang.searchIngredient)
+                    .searchable(text: $searchText, prompt: String(localized: "Search ingredient…"))
                 }
             }
-            .navigationTitle(lang.chooseIngredients)
+            .navigationTitle(String(localized: "Choose Ingredients"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button { showAddIngredientSheet = true } label: {
-                        Label(lang.newIngredient, systemImage: "plus")
+                        Label(String(localized: "New Ingredient"), systemImage: "plus")
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.done) { dismiss() }
+                    Button(String(localized: "Done")) { dismiss() }
                 }
             }
             .sheet(isPresented: $showAddIngredientSheet) {
@@ -546,18 +542,17 @@ private struct InlineAddIngredientSheet: View {
     private let commonUnits = ["g", "kg", "ml", "cl", "l", "stuk", "el", "tl",
                                 "snuf", "takje", "blaadje", "teen"]
 
-    private var lang: AppLanguage { appSettings.language }
     private var isValid: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section(lang.nameLabel) {
-                    TextField(lang.namePlaceholder, text: $name)
+                Section(String(localized: "Name")) {
+                    TextField(String(localized: "e.g. flour, butter, milk…"), text: $name)
                         .autocorrectionDisabled()
                 }
-                Section(lang.unitLabel) {
-                    TextField(lang.unitPlaceholder, text: $unit)
+                Section(String(localized: "Unit")) {
+                    TextField(String(localized: "e.g. g, ml, piece, tbsp…"), text: $unit)
                         .autocorrectionDisabled()
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
@@ -571,24 +566,24 @@ private struct InlineAddIngredientSheet: View {
                         .padding(.vertical, 4)
                     }
                 }
-                Section(lang.shoppingCategoryLabel) {
-                    Picker(lang.shoppingCategoryLabel, selection: $category) {
+                Section(String(localized: "Category")) {
+                    Picker(String(localized: "Category"), selection: $category) {
                         ForEach(ShoppingCategory.allCases) { cat in
-                            Label(cat.localizedName(in: lang), systemImage: cat.icon).tag(cat)
+                            Label(cat.localizedName, systemImage: cat.icon).tag(cat)
                         }
                     }
                     .pickerStyle(.menu)
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(lang.newIngredient)
+            .navigationTitle(String(localized: "New Ingredient"))
             .navigationTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(lang.cancel) { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(lang.addItem) {
+                    Button(String(localized: "Add")) {
                         let trimmed = name.trimmingCharacters(in: .whitespaces)
                         guard !trimmed.isEmpty else { return }
                         let ingredient = Ingredient(
