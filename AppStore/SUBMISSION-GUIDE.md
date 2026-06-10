@@ -52,7 +52,7 @@ Everything needed to go from this repo to "Waiting for Review". Listing copy liv
 ## 3. App Store Connect setup (one-time)
 
 1. **Create the app record:** My Apps → + → New App → iOS, name **recipeInc**, primary language **English**, bundle ID `beullens.homesuite.recipeinc`, SKU e.g. `recipeinc-001`.
-2. **Privacy policy URL:** `https://github.com/GillesDeLeus/RecipeInc/blob/main/PRIVACY.md` (repo must be public; alternatively enable GitHub Pages in repo Settings → Pages for a cleaner URL).
+2. **Privacy policy URL:** `https://gillesdeleus.github.io/RecipeInc/` (GitHub Pages, serving docs/index.md from main).
 3. **App privacy questionnaire:** "Do you collect data?" → **No** → label shows "Data Not Collected".
 4. **Age rating:** all questions "No/None" → 4+.
 5. **Pricing:** Free, all territories (or your selection).

@@ -5,7 +5,7 @@ Copy-paste source for App Store Connect. Character limits: subtitle 30, promotio
 **App name:** recipeInc
 **Primary category:** Food & Drink (already set in build: `public.app-category.food-and-drink`)
 **Price:** Free
-**Privacy policy URL:** https://github.com/GillesDeLeus/RecipeInc/blob/main/PRIVACY.md
+**Privacy policy URL:** https://gillesdeleus.github.io/RecipeInc/
 **Support URL:** https://github.com/GillesDeLeus/RecipeInc/issues
 **Privacy questionnaire:** Data Not Collected (no data collected, no tracking — accurate: all processing on-device, no analytics, no accounts)
 **Age rating questionnaire:** answer "None" to all content descriptors → expected rating 4+
