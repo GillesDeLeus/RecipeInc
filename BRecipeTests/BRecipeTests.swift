@@ -1,6 +1,6 @@
 import Testing
 import SwiftData
-@testable import BRecipe
+@testable import KoensKitchen
 
 // MARK: - Shared helper
 

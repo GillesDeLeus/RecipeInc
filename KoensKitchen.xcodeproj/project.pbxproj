@@ -17,14 +17,14 @@
 			containerPortal = F8D6BCA62FBE4F1600BB583E /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = F8D6BCAD2FBE4F1600BB583E;
-			remoteInfo = RecipeApp;
+			remoteInfo = KoensKitchen;
 		};
 		F8233D1A2FCC90BF00EB0D6B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F8D6BCA62FBE4F1600BB583E /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = F8233D112FCC90BF00EB0D6B;
-			remoteInfo = BRecipeShare;
+			remoteInfo = KoensKitchenShare;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -44,9 +44,9 @@
 
 /* Begin PBXFileReference section */
 		F8140DEB2FBFA479002EA617 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		F8233CF92FCC601700EB0D6B /* BRecipeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BRecipeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		F8233D122FCC90BF00EB0D6B /* BRecipeShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BRecipeShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		F8D6BCAE2FBE4F1600BB583E /* BRecipe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BRecipe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8233CF92FCC601700EB0D6B /* BRecipeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KoensKitchenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8233D122FCC90BF00EB0D6B /* BRecipeShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KoensKitchenShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8D6BCAE2FBE4F1600BB583E /* BRecipe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KoensKitchen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -145,10 +145,10 @@
 			fileSystemSynchronizedGroups = (
 				F8233CFA2FCC601700EB0D6B /* BRecipeTests */,
 			);
-			name = BRecipeTests;
+			name = KoensKitchenTests;
 			packageProductDependencies = (
 			);
-			productName = BRecipeTests;
+			productName = KoensKitchenTests;
 			productReference = F8233CF92FCC601700EB0D6B /* BRecipeTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
@@ -167,10 +167,10 @@
 			fileSystemSynchronizedGroups = (
 				F8233D132FCC90BF00EB0D6B /* BRecipeShare */,
 			);
-			name = BRecipeShare;
+			name = KoensKitchenShare;
 			packageProductDependencies = (
 			);
-			productName = BRecipeShare;
+			productName = KoensKitchenShare;
 			productReference = F8233D122FCC90BF00EB0D6B /* BRecipeShare.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
@@ -191,10 +191,10 @@
 			fileSystemSynchronizedGroups = (
 				F8D6BCB02FBE4F1600BB583E /* RecipeApp */,
 			);
-			name = RecipeApp;
+			name = KoensKitchen;
 			packageProductDependencies = (
 			);
-			productName = RecipeApp;
+			productName = KoensKitchen;
 			productReference = F8D6BCAE2FBE4F1600BB583E /* BRecipe.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -324,7 +324,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BRecipe.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BRecipe";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KoensKitchen.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KoensKitchen";
 			};
 			name = Debug;
 		};
@@ -347,7 +347,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BRecipe.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BRecipe";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KoensKitchen.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KoensKitchen";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -565,7 +565,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gillesdeleus.koenskitchen;
-				PRODUCT_NAME = BRecipe;
+				PRODUCT_NAME = KoensKitchen;
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -617,7 +617,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gillesdeleus.koenskitchen;
-				PRODUCT_NAME = BRecipe;
+				PRODUCT_NAME = KoensKitchen;
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;

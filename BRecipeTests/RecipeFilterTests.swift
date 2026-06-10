@@ -1,5 +1,5 @@
 import Testing
-@testable import BRecipe
+@testable import KoensKitchen
 
 // MARK: - RecipeFilter
 

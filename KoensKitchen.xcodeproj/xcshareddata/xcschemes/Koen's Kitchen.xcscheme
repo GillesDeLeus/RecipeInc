@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "2650"
-   wasCreatedForAppExtension = "YES"
-   version = "2.0">
+   version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES"
@@ -16,24 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F8233D112FCC90BF00EB0D6B"
-               BuildableName = "BRecipeShare.appex"
-               BlueprintName = "BRecipeShare"
-               ReferencedContainer = "container:RecipeApp.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "F8D6BCAD2FBE4F1600BB583E"
-               BuildableName = "BRecipe.app"
-               BlueprintName = "RecipeApp"
-               ReferencedContainer = "container:RecipeApp.xcodeproj">
+               BuildableName = "KoensKitchen.app"
+               BlueprintName = "KoensKitchen"
+               ReferencedContainer = "container:KoensKitchen.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,28 +29,38 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F8233CF82FCC601700EB0D6B"
+               BuildableName = "KoensKitchenTests.xctest"
+               BlueprintName = "KoensKitchenTests"
+               ReferencedContainer = "container:KoensKitchen.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
-      selectedDebuggerIdentifier = ""
-      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
-      askForAppToLaunch = "Yes"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES"
-      launchAutomaticallySubstyle = "2"
       queueDebuggingEnableBacktraceRecording = "Yes">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F8D6BCAD2FBE4F1600BB583E"
-            BuildableName = "BRecipe.app"
-            BlueprintName = "RecipeApp"
-            ReferencedContainer = "container:RecipeApp.xcodeproj">
+            BuildableName = "KoensKitchen.app"
+            BlueprintName = "KoensKitchen"
+            ReferencedContainer = "container:KoensKitchen.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -74,17 +69,15 @@
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      debugDocumentVersioning = "YES"
-      askForAppToLaunch = "Yes"
-      launchAutomaticallySubstyle = "2">
+      debugDocumentVersioning = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F8D6BCAD2FBE4F1600BB583E"
-            BuildableName = "BRecipe.app"
-            BlueprintName = "RecipeApp"
-            ReferencedContainer = "container:RecipeApp.xcodeproj">
+            BuildableName = "KoensKitchen.app"
+            BlueprintName = "KoensKitchen"
+            ReferencedContainer = "container:KoensKitchen.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
