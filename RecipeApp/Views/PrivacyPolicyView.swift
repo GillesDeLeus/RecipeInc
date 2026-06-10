@@ -9,7 +9,7 @@ struct PrivacyPolicyView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(String(localized: "Privacy Policy"))
                         .font(.largeTitle).fontWeight(.bold)
-                    Text(String(localized: "Effective date: May 2026"))
+                    Text(String(localized: "Effective date: June 2026"))
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
 
@@ -41,15 +41,15 @@ struct PrivacyPolicyView: View {
         .init(
             title: "1. Introduction",
             content: """
-            RecipeApp ("the App") is a personal recipe manager developed as an individual project. This Privacy Policy explains how your data is collected, stored, and protected when you use the App.
+            recipeInc ("the App") is a personal recipe manager developed as an individual project. This Privacy Policy explains how your data is collected, stored, and protected when you use the App.
 
-            By using RecipeApp, you agree to the practices described in this document. If you do not agree, please discontinue use of the App.
+            By using recipeInc, you agree to the practices described in this document. If you do not agree, please discontinue use of the App.
             """
         ),
         .init(
             title: "2. Data We Collect",
             content: """
-            RecipeApp stores only data that you explicitly enter:
+            recipeInc stores only data that you explicitly enter:
 
             • Recipes – name, preparation time, instructions, photos, categories, and tags.
             • Ingredients – name, unit of measurement, and shopping category.
@@ -71,7 +71,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "4. iCloud & CloudKit Sync (Upcoming)",
             content: """
-            A future version of RecipeApp will offer optional iCloud synchronisation using Apple's CloudKit framework. When enabled:
+            A future version of recipeInc will offer optional iCloud synchronisation using Apple's CloudKit framework. When enabled:
 
             • Your data will be stored in your personal iCloud account and synced across your devices.
             • The data remains under your full control and is subject to Apple's iCloud Terms of Service and Apple's Privacy Policy (https://www.apple.com/legal/privacy/).
@@ -85,7 +85,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "5. Local Notifications",
             content: """
-            RecipeApp may request permission to send local notifications to alert you when a storage item is approaching its expiry date (1 or 2 days before). These notifications:
+            recipeInc may request permission to send local notifications to alert you when a storage item is approaching its expiry date (1 or 2 days before). These notifications:
 
             • Are generated entirely on your device.
             • Do not involve any network communication.
@@ -101,9 +101,21 @@ struct PrivacyPolicyView: View {
             """
         ),
         .init(
-            title: "7. Data Sharing",
+            title: "7. Network Features",
             content: """
-            RecipeApp does not share, sell, rent, or disclose your personal data to any third party. The App contains no third-party SDKs, advertising frameworks, or analytics libraries.
+            Some optional features connect to the internet, always at your explicit request:
+
+            • Recipe import from a URL – the App fetches the web page you provide (or share) directly from your device, including public caption data for TikTok and YouTube links. Your request goes straight to the website in question; the developer operates no intermediary server.
+            • Barcode lookup – when you scan a product barcode, the barcode number is sent to Open Food Facts (https://openfoodfacts.org) to retrieve product information. No personal data accompanies this request.
+            • AI recipe analysis – all AI processing (text extraction and recipe parsing) happens on your device using Apple Intelligence. Recipe content is never sent to external AI services.
+
+            These requests are subject to the privacy policies of the websites contacted. The App sends no identifiers, accounts, or personal data with any request.
+            """
+        ),
+        .init(
+            title: "8. Data Sharing",
+            content: """
+            recipeInc does not share, sell, rent, or disclose your personal data to any third party. The App contains no third-party SDKs, advertising frameworks, or analytics libraries.
 
             The only circumstances under which data may leave your device are:
             • You explicitly export data using the built-in export feature.
@@ -111,7 +123,7 @@ struct PrivacyPolicyView: View {
             """
         ),
         .init(
-            title: "8. Your Rights (GDPR)",
+            title: "9. Your Rights (GDPR)",
             content: """
             If you are located in the European Economic Area (EEA), you have the following rights under the General Data Protection Regulation (GDPR):
 
@@ -125,19 +137,19 @@ struct PrivacyPolicyView: View {
             """
         ),
         .init(
-            title: "9. Data Retention",
+            title: "10. Data Retention",
             content: """
             Your data is retained for as long as you keep the App installed. Uninstalling the App removes all local data from your device. iCloud data persists until you delete it via iCloud settings or iCloud.com.
             """
         ),
         .init(
-            title: "10. Children's Privacy",
+            title: "11. Children's Privacy",
             content: """
-            RecipeApp does not knowingly collect any information from children under the age of 13. The App does not contain any features designed to collect personal data from children.
+            recipeInc does not knowingly collect any information from children under the age of 13. The App does not contain any features designed to collect personal data from children.
             """
         ),
         .init(
-            title: "11. Changes to This Policy",
+            title: "12. Changes to This Policy",
             content: """
             This Privacy Policy may be updated to reflect changes in the App's functionality (such as the addition of iCloud sync) or applicable law. Material changes will be communicated through an App Store update notice. The "Effective Date" at the top of this page will always reflect the date of the most recent revision.
 
@@ -145,7 +157,7 @@ struct PrivacyPolicyView: View {
             """
         ),
         .init(
-            title: "12. Contact",
+            title: "13. Contact",
             content: """
             If you have questions or concerns about this Privacy Policy or the handling of your data, please contact the developer:
 
@@ -162,15 +174,15 @@ struct PrivacyPolicyView: View {
         .init(
             title: "1. Inleiding",
             content: """
-            RecipeApp ("de App") is een persoonlijke receptenmanager ontwikkeld als individueel project. Dit Privacybeleid legt uit hoe uw gegevens worden verzameld, opgeslagen en beschermd bij het gebruik van de App.
+            recipeInc ("de App") is een persoonlijke receptenmanager ontwikkeld als individueel project. Dit Privacybeleid legt uit hoe uw gegevens worden verzameld, opgeslagen en beschermd bij het gebruik van de App.
 
-            Door RecipeApp te gebruiken, gaat u akkoord met de praktijken beschreven in dit document. Indien u niet akkoord gaat, verzoeken wij u de App niet langer te gebruiken.
+            Door recipeInc te gebruiken, gaat u akkoord met de praktijken beschreven in dit document. Indien u niet akkoord gaat, verzoeken wij u de App niet langer te gebruiken.
             """
         ),
         .init(
             title: "2. Welke gegevens we verzamelen",
             content: """
-            RecipeApp slaat uitsluitend gegevens op die u expliciet invoert:
+            recipeInc slaat uitsluitend gegevens op die u expliciet invoert:
 
             • Recepten – naam, bereidingstijd, instructies, foto's, categorieën en labels.
             • Ingrediënten – naam, meeteenheid en winkelcategorie.
@@ -192,7 +204,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "4. iCloud & CloudKit-synchronisatie (binnenkort beschikbaar)",
             content: """
-            Een toekomstige versie van RecipeApp zal optionele iCloud-synchronisatie aanbieden via het CloudKit-framework van Apple. Wanneer ingeschakeld:
+            Een toekomstige versie van recipeInc zal optionele iCloud-synchronisatie aanbieden via het CloudKit-framework van Apple. Wanneer ingeschakeld:
 
             • Worden uw gegevens opgeslagen in uw persoonlijke iCloud-account en gesynchroniseerd tussen uw apparaten.
             • Blijven de gegevens volledig onder uw beheer en zijn ze onderworpen aan de iCloud-gebruiksvoorwaarden en het Privacybeleid van Apple (https://www.apple.com/nl/legal/privacy/).
@@ -206,7 +218,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "5. Lokale meldingen",
             content: """
-            RecipeApp kan toestemming vragen om lokale meldingen te sturen wanneer een voorraaditem de vervaldatum nadert (1 of 2 dagen ervoor). Deze meldingen:
+            recipeInc kan toestemming vragen om lokale meldingen te sturen wanneer een voorraaditem de vervaldatum nadert (1 of 2 dagen ervoor). Deze meldingen:
 
             • Worden volledig op uw apparaat gegenereerd.
             • Vereisen geen netwerkcommunicatie.
@@ -222,9 +234,21 @@ struct PrivacyPolicyView: View {
             """
         ),
         .init(
-            title: "7. Delen van gegevens",
+            title: "7. Netwerkfuncties",
             content: """
-            RecipeApp deelt, verkoopt, verhuurt of openbaart uw persoonsgegevens niet aan derden. De App bevat geen SDK's van derden, advertentieraamwerken of analysetools.
+            Sommige optionele functies maken verbinding met het internet, altijd op uw uitdrukkelijk verzoek:
+
+            • Recepten importeren via URL – de App haalt de door u opgegeven (of gedeelde) webpagina rechtstreeks vanaf uw apparaat op, inclusief publieke bijschriften voor TikTok- en YouTube-links. Uw verzoek gaat rechtstreeks naar de betreffende website; de ontwikkelaar beheert geen tussenliggende server.
+            • Barcode opzoeken – wanneer u een barcode scant, wordt het barcodenummer naar Open Food Facts (https://openfoodfacts.org) gestuurd om productinformatie op te halen. Er worden geen persoonsgegevens meegestuurd.
+            • AI-receptanalyse – alle AI-verwerking (tekstherkenning en receptanalyse) gebeurt op uw apparaat via Apple Intelligence. Receptinhoud wordt nooit naar externe AI-diensten gestuurd.
+
+            Deze verzoeken vallen onder het privacybeleid van de gecontacteerde websites. De App stuurt geen identifiers, accounts of persoonsgegevens mee met enig verzoek.
+            """
+        ),
+        .init(
+            title: "8. Delen van gegevens",
+            content: """
+            recipeInc deelt, verkoopt, verhuurt of openbaart uw persoonsgegevens niet aan derden. De App bevat geen SDK's van derden, advertentieraamwerken of analysetools.
 
             De enige omstandigheden waaronder gegevens uw apparaat kunnen verlaten zijn:
             • U exporteert gegevens expliciet via de ingebouwde exportfunctie.
@@ -246,19 +270,19 @@ struct PrivacyPolicyView: View {
             """
         ),
         .init(
-            title: "9. Bewaartermijn",
+            title: "10. Bewaartermijn",
             content: """
             Uw gegevens worden bewaard zolang de App op uw apparaat is geïnstalleerd. Het verwijderen van de App wist alle lokale gegevens van uw apparaat. iCloud-gegevens blijven bewaard totdat u ze verwijdert via de iCloud-instellingen of iCloud.com.
             """
         ),
         .init(
-            title: "10. Privacy van kinderen",
+            title: "11. Privacy van kinderen",
             content: """
-            RecipeApp verzamelt niet bewust gegevens van kinderen jonger dan 13 jaar. De App bevat geen functies die zijn ontworpen om persoonsgegevens van kinderen te verzamelen.
+            recipeInc verzamelt niet bewust gegevens van kinderen jonger dan 13 jaar. De App bevat geen functies die zijn ontworpen om persoonsgegevens van kinderen te verzamelen.
             """
         ),
         .init(
-            title: "11. Wijzigingen in dit beleid",
+            title: "12. Wijzigingen in dit beleid",
             content: """
             Dit Privacybeleid kan worden bijgewerkt om wijzigingen in de functionaliteit van de App (zoals de toevoeging van iCloud-synchronisatie) of de toepasselijke wetgeving te weerspiegelen. Materiële wijzigingen worden gecommuniceerd via een App Store-updatemelding. De "Ingangsdatum" bovenaan deze pagina geeft altijd de datum van de meest recente herziening aan.
 
@@ -266,7 +290,7 @@ struct PrivacyPolicyView: View {
             """
         ),
         .init(
-            title: "12. Contact",
+            title: "13. Contact",
             content: """
             Voor vragen of opmerkingen over dit Privacybeleid of de verwerking van uw gegevens kunt u contact opnemen met de ontwikkelaar:
 

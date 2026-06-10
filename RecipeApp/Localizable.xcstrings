@@ -4715,43 +4715,43 @@
         }
       }
     },
-    "Effective date: May 2026": {
+    "Effective date: June 2026": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gültig ab: Mai 2026"
+            "value": "Gültig ab: Juni 2026"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fecha de entrada en vigor: mayo de 2026"
+            "value": "Fecha de entrada en vigor: junio de 2026"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Date d'effet : mai 2026"
+            "value": "Date d'effet : juin 2026"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Data di entrata in vigore: maggio 2026"
+            "value": "Data di entrata in vigore: giugno 2026"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ingangsdatum: mei 2026"
+            "value": "Ingangsdatum: juni 2026"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Data wejścia w życie: maj 2026"
+            "value": "Data wejścia w życie: czerwiec 2026"
           }
         }
       }
