@@ -1,4 +1,4 @@
-# recipeInc — Privacy Policy
+# Koen's Kitchen — Privacy Policy
 
 **Effective date: June 2026**
 
@@ -6,13 +6,13 @@
 
 ## 1. Introduction
 
-recipeInc ("the App") is a personal recipe manager developed as an individual project. This Privacy Policy explains how your data is collected, stored, and protected when you use the App.
+Koen's Kitchen ("the App") is a personal recipe manager developed as an individual project. This Privacy Policy explains how your data is collected, stored, and protected when you use the App.
 
-By using recipeInc, you agree to the practices described in this document. If you do not agree, please discontinue use of the App.
+By using Koen's Kitchen, you agree to the practices described in this document. If you do not agree, please discontinue use of the App.
 
 ## 2. Data We Collect
 
-recipeInc stores only data that you explicitly enter:
+Koen's Kitchen stores only data that you explicitly enter:
 
 - **Recipes** – name, preparation time, instructions, photos, categories, and tags.
 - **Ingredients** – name, unit of measurement, and shopping category.
@@ -30,7 +30,7 @@ No data is transmitted to external servers operated by the developer.
 
 ## 4. iCloud & CloudKit Sync (Upcoming)
 
-A future version of recipeInc will offer optional iCloud synchronisation using Apple's CloudKit framework. When enabled:
+A future version of Koen's Kitchen will offer optional iCloud synchronisation using Apple's CloudKit framework. When enabled:
 
 - Your data will be stored in your personal iCloud account and synced across your devices.
 - The data remains under your full control and is subject to Apple's iCloud Terms of Service and [Apple's Privacy Policy](https://www.apple.com/legal/privacy/).
@@ -42,7 +42,7 @@ CloudKit sync will be strictly opt-in. The App will continue to work fully witho
 
 ## 5. Local Notifications
 
-recipeInc may request permission to send local notifications to alert you when a storage item is approaching its expiry date (1 or 2 days before). These notifications:
+Koen's Kitchen may request permission to send local notifications to alert you when a storage item is approaching its expiry date (1 or 2 days before). These notifications:
 
 - Are generated entirely on your device.
 - Do not involve any network communication.
@@ -66,7 +66,7 @@ These requests are subject to the privacy policies of the websites contacted. Th
 
 ## 8. Data Sharing
 
-recipeInc does not share, sell, rent, or disclose your personal data to any third party. The App contains no third-party SDKs, advertising frameworks, or analytics libraries.
+Koen's Kitchen does not share, sell, rent, or disclose your personal data to any third party. The App contains no third-party SDKs, advertising frameworks, or analytics libraries.
 
 The only circumstances under which data may leave your device are:
 
@@ -91,7 +91,7 @@ Your data is retained for as long as you keep the App installed. Uninstalling th
 
 ## 11. Children's Privacy
 
-recipeInc does not knowingly collect any information from children under the age of 13. The App does not contain any features designed to collect personal data from children.
+Koen's Kitchen does not knowingly collect any information from children under the age of 13. The App does not contain any features designed to collect personal data from children.
 
 ## 12. Changes to This Policy
 

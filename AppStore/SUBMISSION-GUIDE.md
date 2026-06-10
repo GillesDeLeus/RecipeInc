@@ -1,4 +1,4 @@
-# recipeInc 1.0 — Submission guide
+# Koen's Kitchen 1.0 — Submission guide
 
 Everything needed to go from this repo to "Waiting for Review". Listing copy lives in `LISTING.md`.
 
@@ -6,11 +6,11 @@ Everything needed to go from this repo to "Waiting for Review". Listing copy liv
 
 ## 1. App Review notes (paste into App Store Connect → App Review Information → Notes)
 
-> recipeInc is a fully offline recipe manager. No account or sign-in exists; all data is stored on-device.
+> Koen's Kitchen is a fully offline recipe manager. No account or sign-in exists; all data is stored on-device.
 >
 > IMPORTANT — Apple Intelligence: the AI-powered import features (From URL on social posts, From Photo, Paste Text, Generate) require Apple Intelligence to be enabled (Settings → Apple Intelligence & Siri) on a supported device. On devices without it, these features show a clear explanatory message. All core functionality — recipe management, meal calendar, shopping lists, pantry tracking, nutrition — works fully without Apple Intelligence.
 >
-> To test the share extension: open TikTok or YouTube (or Safari on any recipe website), tap Share, choose "recipeInc". Reopen the app — the recipe import screen appears pre-filled. Sharing a screenshot from Photos also works (the app OCRs it).
+> To test the share extension: open TikTok or YouTube (or Safari on any recipe website), tap Share, choose "Koen's Kitchen". Reopen the app — the recipe import screen appears pre-filled. Sharing a screenshot from Photos also works (the app OCRs it).
 >
 > To test barcode scanning: Storage tab → + → Scan Barcode. Product data is fetched from the public Open Food Facts database; only the barcode number is transmitted.
 >
@@ -21,10 +21,10 @@ Everything needed to go from this repo to "Waiting for Review". Listing copy liv
 **Devices needed:** one iPhone with Apple Intelligence enabled; ideally one without (or AI toggled off).
 
 ### Share extension (the critical path)
-- [ ] TikTok → Share → recipeInc → open app → recipe parsed from caption
-- [ ] YouTube → Share → recipeInc → open app → recipe parsed from description
-- [ ] Instagram → Share → recipeInc → open app → falls back gracefully (paste-text guidance)
-- [ ] Safari, normal recipe site → Share → recipeInc → JSON-LD parse (no AI needed)
+- [ ] TikTok → Share → Koen's Kitchen → open app → recipe parsed from caption
+- [ ] YouTube → Share → Koen's Kitchen → open app → recipe parsed from description
+- [ ] Instagram → Share → Koen's Kitchen → open app → falls back gracefully (paste-text guidance)
+- [ ] Safari, normal recipe site → Share → Koen's Kitchen → JSON-LD parse (no AI needed)
 - [ ] Photos → share a screenshot of a recipe → OCR + parse
 - [ ] Share something with no recipe (e.g. a plain URL with no caption) → no false "Recipe saved!"
 
@@ -39,7 +39,7 @@ Everything needed to go from this repo to "Waiting for Review". Listing copy liv
 - [ ] Notifications: set a storage item expiring in 2 days → permission asked at save (not at launch) → notification arrives
 
 ### Localization (spot-check 3+ languages)
-- [ ] iOS Settings → recipeInc → Language lists all 7 languages
+- [ ] iOS Settings → Koen's Kitchen → Language lists all 7 languages
 - [ ] Dutch upgrade path: install previous build, pick Dutch in-app, update to this build → app still Dutch
 - [ ] German or Polish: walk all 6 tabs, check for truncated/overflowing labels (German strings are long)
 - [ ] Plurals: import a JSON export → summary shows correct singular/plural counts
@@ -51,7 +51,7 @@ Everything needed to go from this repo to "Waiting for Review". Listing copy liv
 
 ## 3. App Store Connect setup (one-time)
 
-1. **Create the app record:** My Apps → + → New App → iOS, name **recipeInc**, primary language **English**, bundle ID `beullens.homesuite.recipeinc`, SKU e.g. `recipeinc-001`.
+1. **Create the app record:** My Apps → + → New App → iOS, name **Koen's Kitchen**, primary language **English**, bundle ID `com.gillesdeleus.koenskitchen`, SKU e.g. `koenskitchen-001`.
 2. **Privacy policy URL:** `https://gillesdeleus.github.io/RecipeInc/` (GitHub Pages, serving docs/index.md from main).
 3. **App privacy questionnaire:** "Do you collect data?" → **No** → label shows "Data Not Collected".
 4. **Age rating:** all questions "No/None" → 4+.
@@ -76,6 +76,5 @@ Everything needed to go from this repo to "Waiting for Review". Listing copy liv
 
 ## 5. Known watch items for review
 
-- **App name "recipeInc"** — tiny chance a reviewer questions the "Inc" suffix (implying a company). If asked: it's a brand name, not a legal-entity claim. Fallback name: "recipeInc – Recipe Box".
 - **AI features on reviewer's device** — covered by the review notes; the in-app error messages are localized and actionable.
 - **Open Food Facts / NEVO attribution** — already shown in Settings (ODbL requirement satisfied).

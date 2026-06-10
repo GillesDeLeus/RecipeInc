@@ -1,43 +1,43 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "Open recipeInc to review and import.": {
+    "Open Koen's Kitchen to review and import.": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Öffne recipeInc zum Prüfen und Importieren."
+            "value": "Öffne Koen's Kitchen zum Prüfen und Importieren."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abre recipeInc para revisar e importar."
+            "value": "Abre Koen's Kitchen para revisar e importar."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ouvrez recipeInc pour vérifier et importer."
+            "value": "Ouvrez Koen's Kitchen pour vérifier et importer."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apri recipeInc per controllare e importare."
+            "value": "Apri Koen's Kitchen per controllare e importare."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open recipeInc om het te bekijken en te importeren."
+            "value": "Open Koen's Kitchen om het te bekijken en te importeren."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Otwórz recipeInc, aby sprawdzić i zaimportować."
+            "value": "Otwórz Koen's Kitchen, aby sprawdzić i zaimportować."
           }
         }
       }

@@ -3,7 +3,7 @@ import Observation
 
 /// App-wide user settings persisted in UserDefaults.
 /// Language is no longer managed here — the app follows the system/per-app
-/// language (iOS Settings → recipeInc → Language) via String Catalogs.
+/// language (iOS Settings → Koen’s Kitchen → Language) via String Catalogs.
 @Observable
 final class AppSettings {
 

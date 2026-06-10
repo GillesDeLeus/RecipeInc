@@ -41,15 +41,15 @@ struct PrivacyPolicyView: View {
         .init(
             title: "1. Introduction",
             content: """
-            recipeInc ("the App") is a personal recipe manager developed as an individual project. This Privacy Policy explains how your data is collected, stored, and protected when you use the App.
+            Koen's Kitchen ("the App") is a personal recipe manager developed as an individual project. This Privacy Policy explains how your data is collected, stored, and protected when you use the App.
 
-            By using recipeInc, you agree to the practices described in this document. If you do not agree, please discontinue use of the App.
+            By using Koen's Kitchen, you agree to the practices described in this document. If you do not agree, please discontinue use of the App.
             """
         ),
         .init(
             title: "2. Data We Collect",
             content: """
-            recipeInc stores only data that you explicitly enter:
+            Koen's Kitchen stores only data that you explicitly enter:
 
             • Recipes – name, preparation time, instructions, photos, categories, and tags.
             • Ingredients – name, unit of measurement, and shopping category.
@@ -71,7 +71,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "4. iCloud & CloudKit Sync (Upcoming)",
             content: """
-            A future version of recipeInc will offer optional iCloud synchronisation using Apple's CloudKit framework. When enabled:
+            A future version of Koen's Kitchen will offer optional iCloud synchronisation using Apple's CloudKit framework. When enabled:
 
             • Your data will be stored in your personal iCloud account and synced across your devices.
             • The data remains under your full control and is subject to Apple's iCloud Terms of Service and Apple's Privacy Policy (https://www.apple.com/legal/privacy/).
@@ -85,7 +85,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "5. Local Notifications",
             content: """
-            recipeInc may request permission to send local notifications to alert you when a storage item is approaching its expiry date (1 or 2 days before). These notifications:
+            Koen's Kitchen may request permission to send local notifications to alert you when a storage item is approaching its expiry date (1 or 2 days before). These notifications:
 
             • Are generated entirely on your device.
             • Do not involve any network communication.
@@ -115,7 +115,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "8. Data Sharing",
             content: """
-            recipeInc does not share, sell, rent, or disclose your personal data to any third party. The App contains no third-party SDKs, advertising frameworks, or analytics libraries.
+            Koen's Kitchen does not share, sell, rent, or disclose your personal data to any third party. The App contains no third-party SDKs, advertising frameworks, or analytics libraries.
 
             The only circumstances under which data may leave your device are:
             • You explicitly export data using the built-in export feature.
@@ -145,7 +145,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "11. Children's Privacy",
             content: """
-            recipeInc does not knowingly collect any information from children under the age of 13. The App does not contain any features designed to collect personal data from children.
+            Koen's Kitchen does not knowingly collect any information from children under the age of 13. The App does not contain any features designed to collect personal data from children.
             """
         ),
         .init(
@@ -174,15 +174,15 @@ struct PrivacyPolicyView: View {
         .init(
             title: "1. Inleiding",
             content: """
-            recipeInc ("de App") is een persoonlijke receptenmanager ontwikkeld als individueel project. Dit Privacybeleid legt uit hoe uw gegevens worden verzameld, opgeslagen en beschermd bij het gebruik van de App.
+            Koen's Kitchen ("de App") is een persoonlijke receptenmanager ontwikkeld als individueel project. Dit Privacybeleid legt uit hoe uw gegevens worden verzameld, opgeslagen en beschermd bij het gebruik van de App.
 
-            Door recipeInc te gebruiken, gaat u akkoord met de praktijken beschreven in dit document. Indien u niet akkoord gaat, verzoeken wij u de App niet langer te gebruiken.
+            Door Koen's Kitchen te gebruiken, gaat u akkoord met de praktijken beschreven in dit document. Indien u niet akkoord gaat, verzoeken wij u de App niet langer te gebruiken.
             """
         ),
         .init(
             title: "2. Welke gegevens we verzamelen",
             content: """
-            recipeInc slaat uitsluitend gegevens op die u expliciet invoert:
+            Koen's Kitchen slaat uitsluitend gegevens op die u expliciet invoert:
 
             • Recepten – naam, bereidingstijd, instructies, foto's, categorieën en labels.
             • Ingrediënten – naam, meeteenheid en winkelcategorie.
@@ -204,7 +204,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "4. iCloud & CloudKit-synchronisatie (binnenkort beschikbaar)",
             content: """
-            Een toekomstige versie van recipeInc zal optionele iCloud-synchronisatie aanbieden via het CloudKit-framework van Apple. Wanneer ingeschakeld:
+            Een toekomstige versie van Koen's Kitchen zal optionele iCloud-synchronisatie aanbieden via het CloudKit-framework van Apple. Wanneer ingeschakeld:
 
             • Worden uw gegevens opgeslagen in uw persoonlijke iCloud-account en gesynchroniseerd tussen uw apparaten.
             • Blijven de gegevens volledig onder uw beheer en zijn ze onderworpen aan de iCloud-gebruiksvoorwaarden en het Privacybeleid van Apple (https://www.apple.com/nl/legal/privacy/).
@@ -218,7 +218,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "5. Lokale meldingen",
             content: """
-            recipeInc kan toestemming vragen om lokale meldingen te sturen wanneer een voorraaditem de vervaldatum nadert (1 of 2 dagen ervoor). Deze meldingen:
+            Koen's Kitchen kan toestemming vragen om lokale meldingen te sturen wanneer een voorraaditem de vervaldatum nadert (1 of 2 dagen ervoor). Deze meldingen:
 
             • Worden volledig op uw apparaat gegenereerd.
             • Vereisen geen netwerkcommunicatie.
@@ -248,7 +248,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "8. Delen van gegevens",
             content: """
-            recipeInc deelt, verkoopt, verhuurt of openbaart uw persoonsgegevens niet aan derden. De App bevat geen SDK's van derden, advertentieraamwerken of analysetools.
+            Koen's Kitchen deelt, verkoopt, verhuurt of openbaart uw persoonsgegevens niet aan derden. De App bevat geen SDK's van derden, advertentieraamwerken of analysetools.
 
             De enige omstandigheden waaronder gegevens uw apparaat kunnen verlaten zijn:
             • U exporteert gegevens expliciet via de ingebouwde exportfunctie.
@@ -278,7 +278,7 @@ struct PrivacyPolicyView: View {
         .init(
             title: "11. Privacy van kinderen",
             content: """
-            recipeInc verzamelt niet bewust gegevens van kinderen jonger dan 13 jaar. De App bevat geen functies die zijn ontworpen om persoonsgegevens van kinderen te verzamelen.
+            Koen's Kitchen verzamelt niet bewust gegevens van kinderen jonger dan 13 jaar. De App bevat geen functies die zijn ontworpen om persoonsgegevens van kinderen te verzamelen.
             """
         ),
         .init(

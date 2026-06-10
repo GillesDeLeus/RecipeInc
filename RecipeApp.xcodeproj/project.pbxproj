@@ -315,7 +315,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = beullens.homesuite.BRecipeTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gillesdeleus.koenskitchen.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -338,7 +338,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = beullens.homesuite.BRecipeTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gillesdeleus.koenskitchen.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -361,7 +361,7 @@
 				DEVELOPMENT_TEAM = 859H669NGL;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BRecipeShare/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = recipeInc;
+				INFOPLIST_KEY_CFBundleDisplayName = "Koen's Kitchen";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -370,7 +370,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = beullens.homesuite.recipeinc.share;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gillesdeleus.koenskitchen.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -392,7 +392,7 @@
 				DEVELOPMENT_TEAM = 859H669NGL;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BRecipeShare/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = recipeInc;
+				INFOPLIST_KEY_CFBundleDisplayName = "Koen's Kitchen";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -401,7 +401,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = beullens.homesuite.recipeinc.share;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gillesdeleus.koenskitchen.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -544,7 +544,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = recipeInc;
+				INFOPLIST_KEY_CFBundleDisplayName = "Koen's Kitchen";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used to photograph recipes for import and to scan product barcodes.";
@@ -564,7 +564,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = beullens.homesuite.recipeinc;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gillesdeleus.koenskitchen;
 				PRODUCT_NAME = BRecipe;
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -596,7 +596,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = recipeInc;
+				INFOPLIST_KEY_CFBundleDisplayName = "Koen's Kitchen";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used to photograph recipes for import and to scan product barcodes.";
@@ -616,7 +616,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = beullens.homesuite.recipeinc;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gillesdeleus.koenskitchen;
 				PRODUCT_NAME = BRecipe;
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;

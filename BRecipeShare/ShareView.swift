@@ -31,7 +31,7 @@ struct ShareView: View {
                         .transition(.scale.combined(with: .opacity))
                     Text("Recipe saved!")
                         .font(.headline)
-                    Text("Open recipeInc to review and import.")
+                    Text("Open Koen's Kitchen to review and import.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)

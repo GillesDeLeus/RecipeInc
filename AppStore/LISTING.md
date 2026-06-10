@@ -1,15 +1,15 @@
-# App Store listing content — recipeInc 1.0
+# App Store listing content — Koen's Kitchen 1.0
 
 Copy-paste source for App Store Connect. Character limits: subtitle 30, promotional text 170, keywords 100, description 4000.
 
-**App name:** recipeInc
+**App name:** Koen's Kitchen
 **Primary category:** Food & Drink (already set in build: `public.app-category.food-and-drink`)
 **Price:** Free
 **Privacy policy URL:** https://gillesdeleus.github.io/RecipeInc/
 **Support URL:** https://github.com/GillesDeLeus/RecipeInc/issues
 **Privacy questionnaire:** Data Not Collected (no data collected, no tracking — accurate: all processing on-device, no analytics, no accounts)
 **Age rating questionnaire:** answer "None" to all content descriptors → expected rating 4+
-**Alternative subtitle** (if "recipeInc" name draws a metadata question): see EN below; fallback name suggestion: "recipeInc – Recipe Box"
+**Alternative subtitle** (if "Koen's Kitchen" name draws a metadata question): see EN below; fallback name suggestion: "Koen's Kitchen – Recipe Box"
 
 ---
 
@@ -29,7 +29,7 @@ recipe,recipes,meal,planner,cooking,grocery,shopping,list,pantry,import,tiktok,a
 Your recipes, from anywhere — organized, planned, and on your shopping list.
 
 SAVE RECIPES FROM ANYWHERE
-See a recipe on TikTok, YouTube or a website? Share it to recipeInc and on-device AI turns it into a structured recipe: ingredients, amounts, and steps. Snap a photo of a cookbook page, paste text, or just type a dish name and let AI draft the recipe for you.
+See a recipe on TikTok, YouTube or a website? Share it to Koen's Kitchen and on-device AI turns it into a structured recipe: ingredients, amounts, and steps. Snap a photo of a cookbook page, paste text, or just type a dish name and let AI draft the recipe for you.
 
 ORGANIZED YOUR WAY
 Categories, color-coded tags, favorites, ratings, photos, and powerful filters — including "What can I cook?", which shows only recipes you can make with what's in your pantry right now.
@@ -70,7 +70,7 @@ recept,recepten,maaltijd,planner,koken,boodschappen,lijst,voorraad,importeren,ti
 Je recepten, overal vandaan — georganiseerd, gepland en op je boodschappenlijst.
 
 RECEPTEN BEWAREN VAN OVERAL
-Zie je een recept op TikTok, YouTube of een website? Deel het met recipeInc en AI op je toestel maakt er een gestructureerd recept van: ingrediënten, hoeveelheden en stappen. Fotografeer een kookboekpagina, plak tekst, of typ gewoon een gerechtnaam en laat AI het recept opstellen.
+Zie je een recept op TikTok, YouTube of een website? Deel het met Koen's Kitchen en AI op je toestel maakt er een gestructureerd recept van: ingrediënten, hoeveelheden en stappen. Fotografeer een kookboekpagina, plak tekst, of typ gewoon een gerechtnaam en laat AI het recept opstellen.
 
 GEORGANISEERD OP JOUW MANIER
 Categorieën, gekleurde labels, favorieten, beoordelingen, foto's en krachtige filters — inclusief "Wat kan ik koken?", dat alleen recepten toont die je nu kunt maken met je voorraad.
@@ -109,7 +109,7 @@ rezept,rezepte,essen,planer,kochen,einkaufsliste,vorrat,importieren,tiktok,ki,le
 Deine Rezepte, von überall — organisiert, geplant und auf deiner Einkaufsliste.
 
 REZEPTE VON ÜBERALL SPEICHERN
-Du siehst ein Rezept auf TikTok, YouTube oder einer Website? Teile es mit recipeInc und KI auf dem Gerät macht daraus ein strukturiertes Rezept: Zutaten, Mengen und Schritte. Fotografiere eine Kochbuchseite, füge Text ein oder tippe einfach einen Gerichtnamen und lass die KI das Rezept entwerfen.
+Du siehst ein Rezept auf TikTok, YouTube oder einer Website? Teile es mit Koen's Kitchen und KI auf dem Gerät macht daraus ein strukturiertes Rezept: Zutaten, Mengen und Schritte. Fotografiere eine Kochbuchseite, füge Text ein oder tippe einfach einen Gerichtnamen und lass die KI das Rezept entwerfen.
 
 ORGANISIERT NACH DEINER ART
 Kategorien, farbige Tags, Favoriten, Bewertungen, Fotos und starke Filter — inklusive „Was kann ich kochen?", das nur Rezepte zeigt, die du mit deinem Vorrat sofort zubereiten kannst.
@@ -148,7 +148,7 @@ recette,recettes,repas,planificateur,cuisine,courses,liste,réserves,importer,ti
 Vos recettes, d'où qu'elles viennent — organisées, planifiées et sur votre liste de courses.
 
 ENREGISTREZ DES RECETTES DE PARTOUT
-Une recette sur TikTok, YouTube ou un site web ? Partagez-la vers recipeInc et l'IA sur l'appareil la transforme en recette structurée : ingrédients, quantités et étapes. Photographiez une page de livre de cuisine, collez du texte, ou tapez simplement le nom d'un plat et laissez l'IA rédiger la recette.
+Une recette sur TikTok, YouTube ou un site web ? Partagez-la vers Koen's Kitchen et l'IA sur l'appareil la transforme en recette structurée : ingrédients, quantités et étapes. Photographiez une page de livre de cuisine, collez du texte, ou tapez simplement le nom d'un plat et laissez l'IA rédiger la recette.
 
 ORGANISÉES À VOTRE FAÇON
 Catégories, étiquettes colorées, favoris, notes, photos et filtres puissants — dont « Que puis-je cuisiner ? », qui n'affiche que les recettes réalisables avec vos réserves actuelles.
@@ -187,7 +187,7 @@ ricetta,ricette,pasti,pianificatore,cucina,spesa,lista,dispensa,importare,tiktok
 Le tue ricette, da ovunque — organizzate, pianificate e sulla lista della spesa.
 
 SALVA RICETTE DA OVUNQUE
-Vedi una ricetta su TikTok, YouTube o un sito web? Condividila con recipeInc e l'IA sul dispositivo la trasforma in una ricetta strutturata: ingredienti, quantità e passaggi. Fotografa una pagina di un libro di cucina, incolla del testo o scrivi il nome di un piatto e lascia che l'IA prepari la ricetta.
+Vedi una ricetta su TikTok, YouTube o un sito web? Condividila con Koen's Kitchen e l'IA sul dispositivo la trasforma in una ricetta strutturata: ingredienti, quantità e passaggi. Fotografa una pagina di un libro di cucina, incolla del testo o scrivi il nome di un piatto e lascia che l'IA prepari la ricetta.
 
 ORGANIZZATE A MODO TUO
 Categorie, tag colorati, preferiti, valutazioni, foto e filtri potenti — incluso "Cosa posso cucinare?", che mostra solo le ricette realizzabili con la tua dispensa attuale.
@@ -226,7 +226,7 @@ receta,recetas,comidas,planificador,cocina,compra,lista,despensa,importar,tiktok
 Tus recetas, vengan de donde vengan — organizadas, planificadas y en tu lista de la compra.
 
 GUARDA RECETAS DESDE CUALQUIER LUGAR
-¿Ves una receta en TikTok, YouTube o una web? Compártela con recipeInc y la IA en el dispositivo la convierte en una receta estructurada: ingredientes, cantidades y pasos. Fotografía la página de un libro de cocina, pega texto o escribe el nombre de un plato y deja que la IA redacte la receta.
+¿Ves una receta en TikTok, YouTube o una web? Compártela con Koen's Kitchen y la IA en el dispositivo la convierte en una receta estructurada: ingredientes, cantidades y pasos. Fotografía la página de un libro de cocina, pega texto o escribe el nombre de un plato y deja que la IA redacte la receta.
 
 ORGANIZADAS A TU MANERA
 Categorías, etiquetas de colores, favoritos, valoraciones, fotos y filtros potentes — incluido "¿Qué puedo cocinar?", que muestra solo las recetas que puedes preparar con tu despensa actual.
@@ -265,7 +265,7 @@ przepis,przepisy,posiłki,planer,gotowanie,zakupy,lista,zapasy,import,tiktok,si,
 Twoje przepisy, skądkolwiek — uporządkowane, zaplanowane i na liście zakupów.
 
 ZAPISUJ PRZEPISY SKĄDKOLWIEK
-Widzisz przepis na TikToku, YouTubie lub stronie internetowej? Udostępnij go do recipeInc, a SI na urządzeniu zamieni go w uporządkowany przepis: składniki, ilości i kroki. Sfotografuj stronę książki kucharskiej, wklej tekst albo wpisz nazwę dania i pozwól SI przygotować przepis.
+Widzisz przepis na TikToku, YouTubie lub stronie internetowej? Udostępnij go do Koen's Kitchen, a SI na urządzeniu zamieni go w uporządkowany przepis: składniki, ilości i kroki. Sfotografuj stronę książki kucharskiej, wklej tekst albo wpisz nazwę dania i pozwól SI przygotować przepis.
 
 UPORZĄDKOWANE PO TWOJEMU
 Kategorie, kolorowe etykiety, ulubione, oceny, zdjęcia i potężne filtry — w tym „Co mogę ugotować?", pokazujący tylko przepisy możliwe do przygotowania z obecnych zapasów.
